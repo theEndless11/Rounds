@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "817231109534",
+    "project_id": "josh-d6c",
+    "storage_bucket": "josh-d6c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817231109534:android:24229523600aa73e078a8f",
+        "android_client_info": {
+          "package_name": "com.rounds.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCz-ajDLj7Jm9FZ3U23j1u2AK_oMhSIls8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
