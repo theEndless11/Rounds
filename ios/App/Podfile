@@ -31,6 +31,10 @@ post_install do |installer|
       config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
       config.build_settings['CODE_SIGN_IDENTITY'] = ''
       config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
+      # Fix bundle ID collision - give each pod its own unique bundle ID
+      if config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] == 'com.rounds.social'
+        config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = "com.rounds.social.#{target.name.downcase.gsub(/[^a-z0-9]/, '')}"
+      end
     end
   end
 end
