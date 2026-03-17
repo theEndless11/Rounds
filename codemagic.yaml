@@ -60,6 +60,9 @@ workflows:
           echo "Signing identity: $IDENTITY"
           echo "SIGNING_IDENTITY=$IDENTITY" >> $CM_ENV
 
+          # Write API key for export step
+          echo $APP_STORE_CONNECT_PRIVATE_KEY > /tmp/auth_key.p8
+
       - name: Generate export options plist
         script: |
           cat > /Users/builder/export_options.plist << PLIST
@@ -72,14 +75,7 @@ workflows:
             <key>teamID</key>
             <string>UR2YXR7UBK</string>
             <key>signingStyle</key>
-            <string>manual</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>com.rounds.social</key>
-              <string>$PROFILE_UUID</string>
-            </dict>
-            <key>signingCertificate</key>
-            <string>$SIGNING_IDENTITY</string>
+            <string>automatic</string>
             <key>stripSwiftSymbols</key>
             <true/>
             <key>uploadBitcode</key>
@@ -89,6 +85,8 @@ workflows:
           </dict>
           </plist>
           PLIST
+          echo "Export options:"
+          cat /Users/builder/export_options.plist
 
       - name: Set build number
         script: |
@@ -112,22 +110,17 @@ workflows:
             COMPILER_INDEX_STORE_ENABLE=NO \
             OTHER_CODE_SIGN_FLAGS="--keychain build.keychain"
 
-      - name: Strip framework provisioning profiles
-        script: |
-          ARCHIVE=/Users/builder/clone/build/ios/xcarchive/App.xcarchive
-          echo "Searching for embedded.mobileprovision in archive..."
-          find "$ARCHIVE" -name "embedded.mobileprovision" -print
-          find "$ARCHIVE" -name "embedded.mobileprovision" -delete
-          echo "Done stripping. Remaining provisioning profiles:"
-          find "$ARCHIVE" -name "embedded.mobileprovision" -print || echo "None found - all stripped successfully"
-
       - name: Export IPA
         script: |
           xcodebuild \
             -exportArchive \
             -archivePath /Users/builder/clone/build/ios/xcarchive/App.xcarchive \
             -exportPath /Users/builder/clone/build/ios/ipa \
-            -exportOptionsPlist /Users/builder/export_options.plist
+            -exportOptionsPlist /Users/builder/export_options.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath /tmp/auth_key.p8 \
+            -authenticationKeyID $APP_STORE_CONNECT_KEY_IDENTIFIER \
+            -authenticationKeyIssuerID $APP_STORE_CONNECT_ISSUER_ID
 
     artifacts:
       - build/ios/ipa/*.ipa
