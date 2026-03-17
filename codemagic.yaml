@@ -40,6 +40,20 @@ workflows:
         script: |
           cd ios/App && pod install
 
+      - name: Fix framework bundle IDs before build
+        script: |
+          # Find all framework Info.plist files in the Pods build dir and fix their bundle IDs
+          PODS_DIR=/Users/builder/clone/ios/App/Pods
+          find "$PODS_DIR" -name "Info.plist" | while read plist; do
+            current_id=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$plist" 2>/dev/null)
+            if [ "$current_id" = "com.rounds.social" ]; then
+              framework=$(basename $(dirname "$plist") .framework)
+              new_id="com.rounds.social.pod.$(echo $framework | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')"
+              /usr/libexec/PlistBuddy -c "Set CFBundleIdentifier $new_id" "$plist"
+              echo "Fixed: $plist -> $new_id"
+            fi
+          done
+
       - name: Set up code signing
         script: |
           echo $CERTIFICATE_P12 | base64 --decode > /tmp/certificate.p12
@@ -74,7 +88,14 @@ workflows:
             <key>teamID</key>
             <string>UR2YXR7UBK</string>
             <key>signingStyle</key>
-            <string>automatic</string>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.rounds.social</key>
+              <string>$PROFILE_UUID</string>
+            </dict>
+            <key>signingCertificate</key>
+            <string>$SIGNING_IDENTITY</string>
             <key>stripSwiftSymbols</key>
             <true/>
             <key>uploadBitcode</key>
@@ -84,6 +105,8 @@ workflows:
           </dict>
           </plist>
           PLIST
+          echo "Export options:"
+          cat /Users/builder/export_options.plist
 
       - name: Set build number
         script: |
@@ -113,11 +136,7 @@ workflows:
             -exportArchive \
             -archivePath /Users/builder/clone/build/ios/xcarchive/App.xcarchive \
             -exportPath /Users/builder/clone/build/ios/ipa \
-            -exportOptionsPlist /Users/builder/export_options.plist \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath /tmp/auth_key.p8 \
-            -authenticationKeyID $APP_STORE_CONNECT_KEY_IDENTIFIER \
-            -authenticationKeyIssuerID $APP_STORE_CONNECT_ISSUER_ID
+            -exportOptionsPlist /Users/builder/export_options.plist
 
       - name: Fix framework bundle IDs in IPA
         script: |
@@ -128,18 +147,16 @@ workflows:
           cd $WORK_DIR
           unzip -q App.ipa
 
-          # Fix each framework's bundle ID to be unique
           find . -path "*/Frameworks/*.framework/Info.plist" | while read plist; do
             framework=$(basename $(dirname "$plist") .framework)
             current_id=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$plist" 2>/dev/null)
             if [ "$current_id" = "com.rounds.social" ]; then
-              new_id="com.rounds.social.framework.$(echo $framework | tr '[:upper:]' '[:lower:]')"
+              new_id="com.rounds.social.framework.$(echo $framework | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')"
               /usr/libexec/PlistBuddy -c "Set CFBundleIdentifier $new_id" "$plist"
               echo "Fixed: $framework -> $new_id"
             fi
           done
 
-          # Repack IPA
           rm App.ipa
           zip -qr App.ipa Payload
           cp App.ipa $IPA
