@@ -26,10 +26,10 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.rounds.app</string>
+			<string>com.rounds.social</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.rounds.app</string>
+				<string>com.rounds.social</string>
 			</array>
 		</dict>
 	</array>

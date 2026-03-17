@@ -428,7 +428,7 @@ function dismissBanner() {
 
 /* CSS Variables - Dark Mode (Default) */
 :root {
-  --background: #000;
+  --background: #000000;
   --background-secondary: #111;
   --text-primary: #fff;
   --text-secondary: #888;

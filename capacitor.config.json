@@ -1,12 +1,12 @@
 {
-  "appId": "com.rounds.app",
+  "appId": "com.rounds.social",
   "appName": "Rounds",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"
   },
   "android": {
-    "versionCode": 4
+    "versionCode": 6
   },
   "ios": {
     "contentInset": "always"
