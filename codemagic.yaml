@@ -70,7 +70,7 @@ workflows:
           <plist version="1.0">
           <dict>
             <key>method</key>
-            <string>app-store</string>
+            <string>app-store-connect</string>
             <key>provisioningProfiles</key>
             <dict>
               <key>com.rounds.social</key>
@@ -108,7 +108,8 @@ workflows:
             PROVISIONING_PROFILE="$PROFILE_UUID" \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
             PRODUCT_BUNDLE_IDENTIFIER=com.rounds.social \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            DEVELOPMENT_TEAM=UR2YXR7UBK
 
       - name: Export IPA
         script: |
