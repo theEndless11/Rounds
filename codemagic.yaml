@@ -11,6 +11,7 @@ workflows:
       vars:
         BUNDLE_ID: "com.rounds.social"
         APP_NAME: "Rounds"
+        TEAM_ID: "UR2YXR7UBK"
       groups:
         - app_store_credentials
         - manual_signing
@@ -71,6 +72,8 @@ workflows:
           <dict>
             <key>method</key>
             <string>app-store-connect</string>
+            <key>teamID</key>
+            <string>UR2YXR7UBK</string>
             <key>provisioningProfiles</key>
             <dict>
               <key>com.rounds.social</key>
@@ -89,6 +92,8 @@ workflows:
           </dict>
           </plist>
           PLIST
+          echo "Export options plist:"
+          cat /Users/builder/export_options.plist
 
       - name: Set build number
         script: |
@@ -108,8 +113,8 @@ workflows:
             PROVISIONING_PROFILE="$PROFILE_UUID" \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
             PRODUCT_BUNDLE_IDENTIFIER=com.rounds.social \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            DEVELOPMENT_TEAM=UR2YXR7UBK
+            DEVELOPMENT_TEAM=UR2YXR7UBK \
+            COMPILER_INDEX_STORE_ENABLE=NO
 
       - name: Export IPA
         script: |
@@ -117,7 +122,8 @@ workflows:
             -exportArchive \
             -archivePath /Users/builder/clone/build/ios/xcarchive/App.xcarchive \
             -exportPath /Users/builder/clone/build/ios/ipa \
-            -exportOptionsPlist /Users/builder/export_options.plist
+            -exportOptionsPlist /Users/builder/export_options.plist \
+            DEVELOPMENT_TEAM=UR2YXR7UBK
 
     artifacts:
       - build/ios/ipa/*.ipa
