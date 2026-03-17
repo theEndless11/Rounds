@@ -40,27 +40,6 @@ workflows:
         script: |
           cd ios/App && pod install
 
-      - name: Disable code signing for Pods
-        script: |
-          PODS_XCODEPROJ=/Users/builder/clone/ios/App/Pods/Pods.xcodeproj/project.pbxproj
-          # Replace all CODE_SIGN_IDENTITY entries in Pods project
-          sed -i '' 's/CODE_SIGN_IDENTITY = ".*";/CODE_SIGN_IDENTITY = "";/g' "$PODS_XCODEPROJ"
-          sed -i '' 's/CODE_SIGNING_REQUIRED = YES;/CODE_SIGNING_REQUIRED = NO;/g' "$PODS_XCODEPROJ"
-          sed -i '' 's/CODE_SIGNING_ALLOWED = YES;/CODE_SIGNING_ALLOWED = NO;/g' "$PODS_XCODEPROJ"
-          # Also fix bundle IDs in Pods project
-          sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = "com.rounds.social";/PRODUCT_BUNDLE_IDENTIFIER = "com.rounds.social.pods";/g' "$PODS_XCODEPROJ"
-          echo "Pods project patched"
-          # Also fix Info.plist files in Pods
-          find /Users/builder/clone/ios/App/Pods -name "Info.plist" | while read plist; do
-            current_id=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$plist" 2>/dev/null)
-            if [ "$current_id" = "com.rounds.social" ]; then
-              framework=$(basename $(dirname "$plist"))
-              new_id="com.rounds.social.pod.$(echo $framework | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')"
-              /usr/libexec/PlistBuddy -c "Set CFBundleIdentifier $new_id" "$plist"
-              echo "Fixed plist: $framework -> $new_id"
-            fi
-          done
-
       - name: Set up code signing
         script: |
           echo $CERTIFICATE_P12 | base64 --decode > /tmp/certificate.p12
@@ -133,7 +112,34 @@ workflows:
             PRODUCT_BUNDLE_IDENTIFIER=com.rounds.social \
             DEVELOPMENT_TEAM=UR2YXR7UBK \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            OTHER_CODE_SIGN_FLAGS="--keychain build.keychain"
+            OTHER_CODE_SIGN_FLAGS="--keychain build.keychain" \
+            PODS_CODE_SIGN_STYLE=Manual \
+            PODS_SIGNING_STYLE=Manual
+
+      - name: Remove provisioning profiles from frameworks in archive
+        script: |
+          ARCHIVE=/Users/builder/clone/build/ios/xcarchive/App.xcarchive
+          APP_PATH="$ARCHIVE/Products/Applications/App.app"
+
+          echo "Removing provisioning profiles from frameworks..."
+          find "$APP_PATH/Frameworks" -name "*.framework" | while read fw; do
+            name=$(basename "$fw")
+            if [ -f "$fw/embedded.mobileprovision" ]; then
+              rm "$fw/embedded.mobileprovision"
+              echo "Removed profile from: $name"
+            fi
+            # Also fix bundle ID in Info.plist
+            plist="$fw/Info.plist"
+            if [ -f "$plist" ]; then
+              current_id=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$plist" 2>/dev/null)
+              if [ "$current_id" = "com.rounds.social" ]; then
+                clean=$(echo "$name" | sed 's/.framework//' | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')
+                /usr/libexec/PlistBuddy -c "Set CFBundleIdentifier com.rounds.social.fw.$clean" "$plist"
+                echo "Fixed bundle ID: $name -> com.rounds.social.fw.$clean"
+              fi
+            fi
+          done
+          echo "Done"
 
       - name: Export IPA
         script: |
