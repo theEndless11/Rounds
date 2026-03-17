@@ -119,16 +119,31 @@ workflows:
             -authenticationKeyID $APP_STORE_CONNECT_KEY_IDENTIFIER \
             -authenticationKeyIssuerID $APP_STORE_CONNECT_ISSUER_ID
 
-      - name: Diagnose bundle ID collision
+      - name: Fix framework bundle IDs in IPA
         script: |
           IPA=/Users/builder/clone/build/ios/ipa/App.ipa
-          cd /tmp && mkdir ipa_inspect && cd ipa_inspect
-          cp $IPA . && unzip -q App.ipa
-          echo "=== All Info.plist bundle IDs ==="
-          find . -name "Info.plist" | while read plist; do
-            bid=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$plist" 2>/dev/null)
-            echo "$bid  <--  $plist"
+          WORK_DIR=/tmp/ipa_fix
+          rm -rf $WORK_DIR && mkdir $WORK_DIR
+          cp $IPA $WORK_DIR/App.ipa
+          cd $WORK_DIR
+          unzip -q App.ipa
+
+          # Fix each framework's bundle ID to be unique
+          find . -path "*/Frameworks/*.framework/Info.plist" | while read plist; do
+            framework=$(basename $(dirname "$plist") .framework)
+            current_id=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$plist" 2>/dev/null)
+            if [ "$current_id" = "com.rounds.social" ]; then
+              new_id="com.rounds.social.framework.$(echo $framework | tr '[:upper:]' '[:lower:]')"
+              /usr/libexec/PlistBuddy -c "Set CFBundleIdentifier $new_id" "$plist"
+              echo "Fixed: $framework -> $new_id"
+            fi
           done
+
+          # Repack IPA
+          rm App.ipa
+          zip -qr App.ipa Payload
+          cp App.ipa $IPA
+          echo "IPA repacked successfully"
 
     artifacts:
       - build/ios/ipa/*.ipa
