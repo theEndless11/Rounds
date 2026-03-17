@@ -1,0 +1,67 @@
+
+workflows:
+  ios-release:
+    name: Rounds iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      node: 20.19.0
+      xcode: latest
+      cocoapods: default
+      vars:
+        BUNDLE_ID: "com.rounds.social"
+        APP_NAME: "Rounds"
+      groups:
+        - app_store_credentials   # APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY
+        - certificate_credentials # CERTIFICATE_PRIVATE_KEY
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.rounds.social
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm install
+
+      - name: Build Vue/Vite app
+        script: |
+          npm run build
+
+      - name: Capacitor sync iOS
+        script: |
+          npx cap sync ios
+
+      - name: Install CocoaPods
+        script: |
+          cd ios/App && pod install
+
+      - name: Set build number
+        script: |
+          cd ios/App
+          agvtool new-version -all $(($(agvtool what-version -terse) + 1))
+
+      - name: Build iOS (archive)
+        script: |
+          xcode-project build-ipa \
+            --workspace ios/App/App.xcworkspace \
+            --scheme App
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
