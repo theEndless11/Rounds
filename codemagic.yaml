@@ -1,4 +1,3 @@
-
 workflows:
   ios-release:
     name: Rounds iOS Build
@@ -14,7 +13,6 @@ workflows:
         APP_NAME: "Rounds"
       groups:
         - app_store_credentials   # APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY
-        - certificate_credentials # CERTIFICATE_PRIVATE_KEY
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.rounds.social
