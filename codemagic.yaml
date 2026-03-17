@@ -61,7 +61,7 @@ workflows:
           echo "SIGNING_IDENTITY=$IDENTITY" >> $CM_ENV
 
           # Write API key for export step
-          echo $APP_STORE_CONNECT_PRIVATE_KEY > /tmp/auth_key.p8
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/auth_key.p8
 
       - name: Generate export options plist
         script: |
