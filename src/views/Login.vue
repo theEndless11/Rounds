@@ -3,9 +3,9 @@
     <ion-content class="login-content">
       <div class="login-container">
         <div class="logo-section">
-          <div class="logo-icon">
-            <img src="C:\Users\Lenovo\Documents\octo_mob\Octopus--\src\assets\splash_screen.jpeg" alt="Rounds Logo" style="width: 100%; height: 100%; object-fit: contain;" />
-          </div>
+         <div class="logo-icon">
+  <img src="@/assets/splash_screen.jpeg" alt="Rounds Logo" style="width: 100%; height: 100%; object-fit: contain;" />
+</div>
           <p>Medical Social Network</p>
         </div>
         
