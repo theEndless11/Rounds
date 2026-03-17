@@ -42,7 +42,6 @@ workflows:
 
       - name: Set up code signing
         script: |
-          # Install certificate
           echo $CERTIFICATE_P12 | base64 --decode > /tmp/certificate.p12
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
@@ -50,7 +49,6 @@ workflows:
           security import /tmp/certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
 
-          # Install provisioning profile
           echo $PROVISIONING_PROFILE | base64 --decode > /tmp/profile.mobileprovision
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           UUID=$(grep -a -A1 'UUID' /tmp/profile.mobileprovision | grep -v UUID | tr -d '\t\n\r ' | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
@@ -58,7 +56,6 @@ workflows:
           cp /tmp/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
           echo "PROFILE_UUID=$UUID" >> $CM_ENV
 
-          # Get signing identity
           IDENTITY=$(security find-identity -v -p codesigning build.keychain | grep "iPhone Distribution" | head -1 | sed 's/.*"\(.*\)"/\1/')
           echo "Signing identity: $IDENTITY"
           echo "SIGNING_IDENTITY=$IDENTITY" >> $CM_ENV
@@ -74,6 +71,8 @@ workflows:
             <string>app-store-connect</string>
             <key>teamID</key>
             <string>UR2YXR7UBK</string>
+            <key>signingStyle</key>
+            <string>manual</string>
             <key>provisioningProfiles</key>
             <dict>
               <key>com.rounds.social</key>
@@ -81,18 +80,18 @@ workflows:
             </dict>
             <key>signingCertificate</key>
             <string>$SIGNING_IDENTITY</string>
-            <key>signingStyle</key>
-            <string>manual</string>
             <key>stripSwiftSymbols</key>
             <true/>
             <key>uploadBitcode</key>
             <false/>
             <key>uploadSymbols</key>
             <true/>
+            <key>embedOnDemandResourcesAssetPacksInBundle</key>
+            <false/>
           </dict>
           </plist>
           PLIST
-          echo "Export options plist:"
+          echo "Export options:"
           cat /Users/builder/export_options.plist
 
       - name: Set build number
@@ -114,7 +113,8 @@ workflows:
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
             PRODUCT_BUNDLE_IDENTIFIER=com.rounds.social \
             DEVELOPMENT_TEAM=UR2YXR7UBK \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            OTHER_CODE_SIGN_FLAGS="--keychain build.keychain"
 
       - name: Export IPA
         script: |
@@ -123,7 +123,7 @@ workflows:
             -archivePath /Users/builder/clone/build/ios/xcarchive/App.xcarchive \
             -exportPath /Users/builder/clone/build/ios/ipa \
             -exportOptionsPlist /Users/builder/export_options.plist \
-            DEVELOPMENT_TEAM=UR2YXR7UBK
+            -allowProvisioningUpdates
 
     artifacts:
       - build/ios/ipa/*.ipa
