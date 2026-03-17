@@ -53,11 +53,17 @@ workflows:
           echo $PROVISIONING_PROFILE | base64 --decode > /tmp/profile.mobileprovision
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           UUID=$(grep -a -A1 'UUID' /tmp/profile.mobileprovision | grep -v UUID | tr -d '\t\n\r ' | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
+          echo "Profile UUID: $UUID"
           cp /tmp/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
+          echo "PROFILE_UUID=$UUID" >> $CM_ENV
+
+          # Get signing identity
+          IDENTITY=$(security find-identity -v -p codesigning build.keychain | grep "iPhone Distribution" | head -1 | sed 's/.*"\(.*\)"/\1/')
+          echo "Signing identity: $IDENTITY"
+          echo "SIGNING_IDENTITY=$IDENTITY" >> $CM_ENV
 
       - name: Generate export options plist
         script: |
-          PROFILE_UUID=$(grep -a -A1 'UUID' /tmp/profile.mobileprovision | grep -v UUID | tr -d '\t\n\r ' | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
           cat > /Users/builder/export_options.plist << PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -70,6 +76,8 @@ workflows:
               <key>com.rounds.social</key>
               <string>$PROFILE_UUID</string>
             </dict>
+            <key>signingCertificate</key>
+            <string>$SIGNING_IDENTITY</string>
             <key>signingStyle</key>
             <string>manual</string>
             <key>stripSwiftSymbols</key>
@@ -89,11 +97,26 @@ workflows:
 
       - name: Build iOS (archive)
         script: |
-          xcode-project build-ipa \
-            --workspace ios/App/App.xcworkspace \
-            --scheme App \
-            --config Release \
-            --export-options-plist /Users/builder/export_options.plist
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath /Users/builder/clone/build/ios/xcarchive/App.xcarchive \
+            archive \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" \
+            PROVISIONING_PROFILE="$PROFILE_UUID" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
+            PRODUCT_BUNDLE_IDENTIFIER=com.rounds.social \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Export IPA
+        script: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath /Users/builder/clone/build/ios/xcarchive/App.xcarchive \
+            -exportPath /Users/builder/clone/build/ios/ipa \
+            -exportOptionsPlist /Users/builder/export_options.plist
 
     artifacts:
       - build/ios/ipa/*.ipa
