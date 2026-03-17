@@ -12,8 +12,8 @@ workflows:
         BUNDLE_ID: "com.rounds.social"
         APP_NAME: "Rounds"
       groups:
-        - app_store_credentials   # APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY
-        - manual_signing          # CERTIFICATE_P12, CERTIFICATE_PASSWORD, PROVISIONING_PROFILE
+        - app_store_credentials
+        - manual_signing
 
     triggering:
       events:
@@ -55,6 +55,33 @@ workflows:
           UUID=$(grep -a -A1 'UUID' /tmp/profile.mobileprovision | grep -v UUID | tr -d '\t\n\r ' | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
           cp /tmp/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
 
+      - name: Generate export options plist
+        script: |
+          PROFILE_UUID=$(grep -a -A1 'UUID' /tmp/profile.mobileprovision | grep -v UUID | tr -d '\t\n\r ' | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
+          cat > /Users/builder/export_options.plist << PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.rounds.social</key>
+              <string>$PROFILE_UUID</string>
+            </dict>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          PLIST
+
       - name: Set build number
         script: |
           cd ios/App
@@ -65,7 +92,8 @@ workflows:
           xcode-project build-ipa \
             --workspace ios/App/App.xcworkspace \
             --scheme App \
-            --config Release
+            --config Release \
+            --export-options-plist /Users/builder/export_options.plist
 
     artifacts:
       - build/ios/ipa/*.ipa
