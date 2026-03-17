@@ -86,8 +86,6 @@ workflows:
             <false/>
             <key>uploadSymbols</key>
             <true/>
-            <key>embedOnDemandResourcesAssetPacksInBundle</key>
-            <false/>
           </dict>
           </plist>
           PLIST
@@ -114,16 +112,23 @@ workflows:
             PRODUCT_BUNDLE_IDENTIFIER=com.rounds.social \
             DEVELOPMENT_TEAM=UR2YXR7UBK \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            OTHER_CODE_SIGN_FLAGS="--keychain build.keychain"
+            OTHER_CODE_SIGN_FLAGS="--keychain build.keychain" \
+            PODS_ROOT_CODE_SIGN_IDENTITY="" \
+            PODS_CODE_SIGN_STYLE=Manual
 
       - name: Export IPA
         script: |
+          # Strip provisioning profiles from frameworks before export
+          ARCHIVE=/Users/builder/clone/build/ios/xcarchive/App.xcarchive
+          find "$ARCHIVE" -name "*.framework" | while read framework; do
+            rm -f "$framework/embedded.mobileprovision"
+          done
+
           xcodebuild \
             -exportArchive \
-            -archivePath /Users/builder/clone/build/ios/xcarchive/App.xcarchive \
+            -archivePath $ARCHIVE \
             -exportPath /Users/builder/clone/build/ios/ipa \
-            -exportOptionsPlist /Users/builder/export_options.plist \
-            -allowProvisioningUpdates
+            -exportOptionsPlist /Users/builder/export_options.plist
 
     artifacts:
       - build/ios/ipa/*.ipa
