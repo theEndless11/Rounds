@@ -40,17 +40,24 @@ workflows:
         script: |
           cd ios/App && pod install
 
-      - name: Fix framework bundle IDs before build
+      - name: Disable code signing for Pods
         script: |
-          # Find all framework Info.plist files in the Pods build dir and fix their bundle IDs
-          PODS_DIR=/Users/builder/clone/ios/App/Pods
-          find "$PODS_DIR" -name "Info.plist" | while read plist; do
+          PODS_XCODEPROJ=/Users/builder/clone/ios/App/Pods/Pods.xcodeproj/project.pbxproj
+          # Replace all CODE_SIGN_IDENTITY entries in Pods project
+          sed -i '' 's/CODE_SIGN_IDENTITY = ".*";/CODE_SIGN_IDENTITY = "";/g' "$PODS_XCODEPROJ"
+          sed -i '' 's/CODE_SIGNING_REQUIRED = YES;/CODE_SIGNING_REQUIRED = NO;/g' "$PODS_XCODEPROJ"
+          sed -i '' 's/CODE_SIGNING_ALLOWED = YES;/CODE_SIGNING_ALLOWED = NO;/g' "$PODS_XCODEPROJ"
+          # Also fix bundle IDs in Pods project
+          sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = "com.rounds.social";/PRODUCT_BUNDLE_IDENTIFIER = "com.rounds.social.pods";/g' "$PODS_XCODEPROJ"
+          echo "Pods project patched"
+          # Also fix Info.plist files in Pods
+          find /Users/builder/clone/ios/App/Pods -name "Info.plist" | while read plist; do
             current_id=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$plist" 2>/dev/null)
             if [ "$current_id" = "com.rounds.social" ]; then
-              framework=$(basename $(dirname "$plist") .framework)
+              framework=$(basename $(dirname "$plist"))
               new_id="com.rounds.social.pod.$(echo $framework | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')"
               /usr/libexec/PlistBuddy -c "Set CFBundleIdentifier $new_id" "$plist"
-              echo "Fixed: $plist -> $new_id"
+              echo "Fixed plist: $framework -> $new_id"
             fi
           done
 
@@ -105,8 +112,6 @@ workflows:
           </dict>
           </plist>
           PLIST
-          echo "Export options:"
-          cat /Users/builder/export_options.plist
 
       - name: Set build number
         script: |
@@ -137,30 +142,6 @@ workflows:
             -archivePath /Users/builder/clone/build/ios/xcarchive/App.xcarchive \
             -exportPath /Users/builder/clone/build/ios/ipa \
             -exportOptionsPlist /Users/builder/export_options.plist
-
-      - name: Fix framework bundle IDs in IPA
-        script: |
-          IPA=/Users/builder/clone/build/ios/ipa/App.ipa
-          WORK_DIR=/tmp/ipa_fix
-          rm -rf $WORK_DIR && mkdir $WORK_DIR
-          cp $IPA $WORK_DIR/App.ipa
-          cd $WORK_DIR
-          unzip -q App.ipa
-
-          find . -path "*/Frameworks/*.framework/Info.plist" | while read plist; do
-            framework=$(basename $(dirname "$plist") .framework)
-            current_id=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$plist" 2>/dev/null)
-            if [ "$current_id" = "com.rounds.social" ]; then
-              new_id="com.rounds.social.framework.$(echo $framework | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')"
-              /usr/libexec/PlistBuddy -c "Set CFBundleIdentifier $new_id" "$plist"
-              echo "Fixed: $framework -> $new_id"
-            fi
-          done
-
-          rm App.ipa
-          zip -qr App.ipa Payload
-          cp App.ipa $IPA
-          echo "IPA repacked successfully"
 
     artifacts:
       - build/ios/ipa/*.ipa
