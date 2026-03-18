@@ -34,32 +34,44 @@ if (Capacitor.isNativePlatform()) {
   CapApp.addListener('appUrlOpen', async (event) => {
     try {
       const url = new URL(event.url)
-      
-      if (url.pathname === '//auth/callback' || url.host === 'auth') {
+
+      // Handle auth callback: com.rounds.social://auth/callback#access_token=...
+      if (url.host === 'auth' && url.pathname === '/callback') {
         const hashParams = new URLSearchParams(url.hash.substring(1))
         const accessToken = hashParams.get('access_token')
         const refreshToken = hashParams.get('refresh_token')
-        
+
         if (accessToken && refreshToken) {
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           })
-          
-          if (error) {
+
+          if (error || !data.session) {
             router.push('/login')
             return
           }
-          
-          if (data.session) {
-            router.push('/auth/callback')
-          } else {
-            router.push('/login')
-          }
+
+          // Session is set — navigate to callback route which will handle the rest
+          router.push('/auth/callback')
         } else {
           router.push('/login')
         }
+        return
       }
+
+      // Handle password reset: com.rounds.social://reset-password#access_token=...
+      if (url.host === 'reset-password') {
+        const hashParams = new URLSearchParams(url.hash.substring(1))
+        const accessToken = hashParams.get('access_token')
+        if (accessToken) {
+          router.push({ path: '/reset-password', query: { access_token: accessToken } })
+        } else {
+          router.push('/login')
+        }
+        return
+      }
+
     } catch (err) {
       router.push('/login')
     }
@@ -70,8 +82,8 @@ if (Capacitor.isNativePlatform()) {
 router.isReady().then(async () => {
   const { useAuthStore } = await import('./stores/auth')
   const authStore = useAuthStore()
-  
+
   await authStore.initAuth()
-  
+
   app.mount('#app')
 })

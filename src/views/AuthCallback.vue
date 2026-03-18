@@ -32,67 +32,61 @@ onMounted(async () => {
   callbackProcessed = true
 
   try {
-    
     if (Capacitor.isNativePlatform()) {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1))
-      const queryParams = new URLSearchParams(window.location.search)
-      
-      const accessToken = hashParams.get('access_token') || queryParams.get('access_token')
-      const refreshToken = hashParams.get('refresh_token') || queryParams.get('refresh_token')
-      
-      if (!accessToken || !refreshToken) {
+      // On native, session is already set by the appUrlOpen handler in main.js
+      // Just read the existing session
+      const { data: { session }, error } = await supabase.auth.getSession()
+
+      if (error || !session) {
+        statusMessage.value = 'Sign in failed. Redirecting...'
         router.replace('/login')
         return
       }
-      
-      const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken
-      })
-      
-      if (sessionError || !sessionData.session) {
-        router.replace('/login')
-        return
-      }
-      
-      authStore.user = sessionData.session.user
-      authStore.session = sessionData.session
-      
+
+      authStore.user = session.user
+      authStore.session = session
+
     } else {
+      // Web: session comes from URL hash automatically via Supabase
       await new Promise(resolve => setTimeout(resolve, 150))
-      
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      
-      if (sessionError || !session) {
+
+      const { data: { session }, error } = await supabase.auth.getSession()
+
+      if (error || !session) {
+        statusMessage.value = 'Sign in failed. Redirecting...'
         router.replace('/login')
         return
       }
-      
+
       authStore.user = session.user
       authStore.session = session
     }
-    
+
+    // Check verification status
     await authStore.checkVerificationStatus(authStore.user.id)
-    
+
+    // Check if profile exists
     const { data: profile } = await supabase
       .from('users')
       .select('*')
       .eq('id', authStore.user.id)
       .maybeSingle()
-    
+
+    // Clean up URL hash if present
     if (window.location.hash) {
       window.history.replaceState({}, document.title, window.location.pathname)
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 150))
-    
+
     if (!profile) {
       await router.replace('/complete-profile')
     } else {
       await router.replace('/tabs/home')
     }
-    
+
   } catch (error) {
+    statusMessage.value = 'Something went wrong. Redirecting...'
     router.replace('/login')
   }
 })

@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.rounds.app</string>
+	<string>com.rounds.social</string>
 	<key>PROJECT_ID</key>
 	<string>josh-d6c</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:817231109534:ios:1168fab824617d94078a8f</string>
+	<string>1:817231109534:ios:090c5b3fe1aded4e078a8f</string>
 </dict>
 </plist>

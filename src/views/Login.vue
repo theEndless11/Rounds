@@ -29,6 +29,10 @@
               class="custom-input"
               @keyup.enter="handleLogin"
               :disabled="loading"
+              autocomplete="email"
+              autocorrect="off"
+              autocapitalize="none"
+              spellcheck="false"
             />
           </div>
           
@@ -41,6 +45,7 @@
               class="custom-input"
               @keyup.enter="handleLogin"
               :disabled="loading"
+              autocomplete="current-password"
             />
             <div class="forgot-password-wrapper">
               <span @click="handleForgotPassword" class="forgot-password-link">Forgot password?</span>
@@ -83,6 +88,264 @@
     </ion-content>
   </ion-page>
 </template>
+
+<style scoped>
+.success-text {
+  color: #6ee7b7;
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+  padding: 16px;
+  background: #000000;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.error-text {
+  color: #fca5a5;
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+  padding: 12px;
+  background: #000000;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.forgot-password-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.forgot-password-link {
+  font-size: 14px;
+  color: #8b5cf6;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+  /* iOS tap fix */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.forgot-password-link:hover {
+  color: #7c3aed;
+  text-decoration: underline;
+}
+</style>
+
+<style scoped>
+.login-content {
+  --background: #000;
+}
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+.logo-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.logo-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+.logo-icon img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
+.logo-section p {
+  color: #6b7280;
+  font-size: 0.9375rem;
+  margin: 0;
+}
+.form-section {
+  width: 100%;
+}
+.input-wrapper {
+  margin-bottom: 1.25rem;
+}
+.input-label {
+  display: block;
+  color: #9ca3af;
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+.custom-input {
+  width: 100%;
+  height: 44px;
+  background: #000 !important;
+  border: 1px solid #262626;
+  border-radius: 21px;
+  padding: 0 1.25rem;
+  color: #e5e7eb !important;
+  /* 
+    KEY FIX: font-size must be >= 16px on iOS to prevent auto-zoom on focus.
+    We use 16px here and rely on the container's max-width to keep it looking right.
+  */
+  font-size: 16px;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-text-fill-color: #e5e7eb !important;
+  -webkit-box-shadow: 0 0 0 1000px #000 inset !important;
+  /* Prevent iOS tap flash */
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent double-tap zoom on inputs */
+  touch-action: manipulation;
+  /* Prevent iOS rounded corners override */
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+.custom-input::placeholder {
+  color: #4b5563;
+}
+.custom-input:focus {
+  outline: none;
+  background: #0a0a0a !important;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  -webkit-box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15), 0 0 0 1000px #0a0a0a inset !important;
+}
+.custom-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.login-btn {
+  --background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+  --background-hover: linear-gradient(135deg, #9333ea 0%, #6d28d9 100%);
+  --color: #fff;
+  --border-radius: 24px;
+  --box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+  height: 41px;
+  margin-top: 0.5rem;
+  font-weight: 300;
+  margin-left: 5%;
+  width: 90%;
+  font-size: 0.9375rem;
+  /* iOS tap fix */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.login-btn:hover:not([disabled]) {
+  --box-shadow: 0 6px 16px rgba(139, 92, 246, 0.35);
+}
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 1.75rem 0 1.5rem;
+}
+.divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1px;
+  background: #1a1a1a;
+}
+.divider span {
+  position: relative;
+  background: #000;
+  padding: 0 1rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.google-btn {
+  width: 90%;
+  height: 42px;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 24px;
+  color: #1f2937;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-left: 5%;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  /* iOS tap fixes */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.google-btn:hover:not([disabled]) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.google-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.signup-text {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #9ca3af;
+  font-size: 0.9375rem;
+}
+.signup-link {
+  color: #10b981;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  /* iOS tap fix */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.signup-link:hover {
+  color: #34d399;
+}
+.error-text {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  font-size: 0.875rem;
+  text-align: center;
+}
+@media (max-width: 576px) {
+  .login-container {
+    padding: 1.5rem 1.25rem;
+  }
+  .logo-section {
+    margin-bottom: 2.5rem;
+  }
+}
+</style>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
@@ -271,228 +534,3 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
-.success-text {
-  color: #6ee7b7;
-  font-size: 14px;
-  margin-bottom: 16px;
-  text-align: center;
-  padding: 16px;
-  background: #000000;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 12px;
-  line-height: 1.6;
-  white-space: pre-line;
-}
-
-.error-text {
-  color: #fca5a5;
-  font-size: 14px;
-  margin-bottom: 16px;
-  text-align: center;
-  padding: 12px;
-  background: #000000;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 12px;
-  line-height: 1.6;
-  white-space: pre-line;
-}
-.forgot-password-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
-}
-
-.forgot-password-link {
-  font-size: 14px;
-  color: #8b5cf6;
-  cursor: pointer;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.forgot-password-link:hover {
-  color: #7c3aed;
-  text-decoration: underline;
-}
-</style>
-
-<style scoped>
-.login-content {
-  --background: #000;
-}
-.login-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 100%;
-  max-width: 380px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-}
-.logo-section {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-.logo-icon {
-  width: 90px;
-  height: 90px;
-  margin: 0 auto 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-.logo-icon img {
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
-}
-.logo-section p {
-  color: #6b7280;
-  font-size: 0.9375rem;
-  margin: 0;
-}
-.form-section {
-  width: 100%;
-}
-.input-wrapper {
-  margin-bottom: 1.25rem;
-}
-.input-label {
-  display: block;
-  color: #9ca3af;
-  font-weight: 500;
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
-}
-.custom-input {
-  width: 100%;
-  height: 44px;
-  background: #000 !important;
-  border: 1px solid #262626;
-  border-radius: 21px;
-  padding: 0 1.25rem;
-  color: #e5e7eb !important;
-  font-size: 0.9375rem;
-  font-family: inherit;
-  transition: all 0.2s ease;
-  -webkit-text-fill-color: #e5e7eb !important;
-  -webkit-box-shadow: 0 0 0 1000px #000 inset !important;
-}
-.custom-input::placeholder {
-  color: #4b5563;
-}
-.custom-input:focus {
-  background: #0a0a0a !important;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
-  -webkit-box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15), 0 0 0 1000px #0a0a0a inset !important;
-}
-.login-btn {
-  --background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
-  --background-hover: linear-gradient(135deg, #9333ea 0%, #6d28d9 100%);
-  --color: #fff;
-  --border-radius: 24px;
-  --box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
-  height: 41px;
-  margin-top: 0.5rem;
-  font-weight: 300;
-  margin-left: 5%;
-  width: 90%;
-  font-size: 0.9375rem;
-}
-.login-btn:hover:not([disabled]) {
-  --box-shadow: 0 6px 16px rgba(139, 92, 246, 0.35);
-}
-.divider {
-  position: relative;
-  text-align: center;
-  margin: 1.75rem 0 1.5rem;
-}
-.divider::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 100%;
-  height: 1px;
-  background: #1a1a1a;
-}
-.divider span {
-  position: relative;
-  background: #000;
-  padding: 0 1rem;
-  color: #6b7280;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-.google-btn {
-  width: 90%;
-  height: 42px;
-  background: #fff;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 24px;
-  color: #1f2937;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  margin-left: 5%;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.google-btn:hover:not([disabled]) {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-.google-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.google-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-.signup-text {
-  text-align: center;
-  margin-top: 1.5rem;
-  color: #9ca3af;
-  font-size: 0.9375rem;
-}
-.signup-link {
-  color: #10b981;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-.signup-link:hover {
-  color: #34d399;
-}
-.error-text {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  background: rgba(239, 68, 68, 0.1);
-  border-radius: 12px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  font-size: 0.875rem;
-  text-align: center;
-}
-@media (max-width: 576px) {
-  .login-container {
-    padding: 1.5rem 1.25rem;
-  }
-  .logo-section {
-    margin-bottom: 2.5rem;
-  }
-}
-</style>
