@@ -1,56 +1,60 @@
 import { ref } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 
 const THEME_KEY = 'app-theme';
 const isLight = ref(false);
 
 export const useDarkMode = () => {
-  
-  // Initialize theme from storage or system preference
+
   const initTheme = async () => {
     try {
-      // Check stored preference first
       const { value } = await Preferences.get({ key: THEME_KEY });
-      
+
       if (value) {
         isLight.value = value === 'light';
       } else {
-        // Default to dark (no class needed)
         isLight.value = false;
       }
-      
+
       await applyTheme();
     } catch (error) {
       console.error('Error loading theme:', error);
-      // Default to dark if error
       isLight.value = false;
       await applyTheme();
     }
   };
 
-  // Apply theme to DOM and Status Bar
   const applyTheme = async () => {
     document.body.classList.toggle('light', isLight.value);
-    
-    // Update status bar
+
+    // Set background color on html and body to cover safe areas
+    const bgColor = isLight.value ? '#ffffff' : '#000000';
+    document.documentElement.style.backgroundColor = bgColor;
+    document.body.style.backgroundColor = bgColor;
+
     try {
-      if (isLight.value) {
-        // Light mode - use DARK text on status bar
-        await StatusBar.setStyle({ style: Style.Light });
-        await StatusBar.setBackgroundColor({ color: '#ffffff' });
+      if (Capacitor.getPlatform() === 'ios') {
+        // iOS: only set style (text color), background follows app
+        await StatusBar.setStyle({ style: isLight.value ? Style.Light : Style.Dark });
+        // On iOS setOverlaysWebView false makes status bar have its own background
+        await StatusBar.setOverlaysWebView({ overlay: false });
       } else {
-        // Dark mode - use LIGHT text on status bar
-        await StatusBar.setStyle({ style: Style.Dark });
-        await StatusBar.setBackgroundColor({ color: '#000000' });
+        // Android: can set background color directly
+        if (isLight.value) {
+          await StatusBar.setStyle({ style: Style.Light });
+          await StatusBar.setBackgroundColor({ color: '#ffffff' });
+        } else {
+          await StatusBar.setStyle({ style: Style.Dark });
+          await StatusBar.setBackgroundColor({ color: '#000000' });
+        }
       }
     } catch (error) {
-      // Status bar might not be available on web
       console.log('Status bar not available:', error);
     }
   };
 
-  // Toggle theme
   const toggleTheme = async () => {
     isLight.value = !isLight.value;
     await Preferences.set({
@@ -60,7 +64,6 @@ export const useDarkMode = () => {
     await applyTheme();
   };
 
-  // Set specific theme
   const setTheme = async (theme) => {
     isLight.value = theme === 'light';
     await Preferences.set({
@@ -70,11 +73,9 @@ export const useDarkMode = () => {
     await applyTheme();
   };
 
-  // Listen for system theme changes
   const listenToSystemTheme = () => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     prefersDark.addEventListener('change', async (e) => {
-      // Only auto-switch if user hasn't set a preference
       const { value } = await Preferences.get({ key: THEME_KEY });
       if (!value) {
         isLight.value = !e.matches;

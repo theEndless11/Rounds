@@ -476,27 +476,66 @@ body.light {
 }
 
 /* ============================================
+   iOS SAFE AREA FIXES
+   ============================================ */
+
+/* Cover the status bar and home indicator areas on iOS */
+html {
+  background-color: #000000;
+  height: 100%;
+}
+
+body {
+  background-color: #000000;
+  height: 100%;
+}
+
+body.light {
+  background-color: #ffffff;
+}
+
+body.light html {
+  background-color: #ffffff;
+}
+
+/* Ensure ion-app fills entire screen including safe areas */
+ion-app {
+  background-color: #000000;
+  /* Extend background into safe areas */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  margin-top: calc(-1 * env(safe-area-inset-top));
+  margin-bottom: calc(-1 * env(safe-area-inset-bottom));
+}
+
+body.light ion-app {
+  background-color: #ffffff;
+}
+
+/* Tab bar should respect bottom safe area */
+ion-tab-bar {
+  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(56px + env(safe-area-inset-bottom));
+}
+
+/* ============================================
    NATIVE TRANSITION OPTIMIZATIONS
    ============================================ */
 
-/* Smooth page transitions with native feel */
 ion-router-outlet {
   contain: layout style size;
 }
 
-/* Enable hardware acceleration for smooth animations */
 ion-page {
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-/* Optimize content scrolling */
 ion-content {
   --overflow: auto;
 }
 
-/* Prevent tab bar flicker during page transitions */
 ion-tab-bar {
   contain: layout style size;
   will-change: transform;

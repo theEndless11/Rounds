@@ -94,8 +94,11 @@ workflows:
 
       - name: Set build number
         script: |
+          # Use timestamp as build number to always be unique
+          BUILD_NUMBER=$(date +%Y%m%d%H%M)
+          echo "Setting build number to $BUILD_NUMBER"
           cd ios/App
-          agvtool new-version -all $(($(agvtool what-version -terse) + 1))
+          agvtool new-version -all $BUILD_NUMBER
 
       - name: Build iOS (archive)
         script: |

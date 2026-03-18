@@ -21,6 +21,7 @@ import '@ionic/vue/css/display.css'
 // Capacitor imports
 import { App as CapApp } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
+import { Browser } from '@capacitor/browser'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -32,16 +33,24 @@ app.use(router)
 // Handle deep links for OAuth callback (mobile only)
 if (Capacitor.isNativePlatform()) {
   CapApp.addListener('appUrlOpen', async (event) => {
+    // Close the in-app browser if open (after Google OAuth redirect)
+    try {
+      await Browser.close()
+    } catch (_) {
+      // Browser might not be open, ignore
+    }
+
     try {
       const url = new URL(event.url)
 
-      // Handle auth callback: com.rounds.social://auth/callback#access_token=...
+      // Handle auth callback: com.rounds.social://auth/callback
       if (url.host === 'auth' && url.pathname === '/callback') {
         const hashParams = new URLSearchParams(url.hash.substring(1))
         const accessToken = hashParams.get('access_token')
         const refreshToken = hashParams.get('refresh_token')
 
         if (accessToken && refreshToken) {
+          // Implicit flow — set session directly
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
@@ -52,15 +61,27 @@ if (Capacitor.isNativePlatform()) {
             return
           }
 
-          // Session is set — navigate to callback route which will handle the rest
           router.push('/auth/callback')
         } else {
-          router.push('/login')
+          // PKCE flow — check for code in query params
+          const queryParams = new URLSearchParams(url.search)
+          const code = queryParams.get('code')
+
+          if (code) {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+            if (error || !data.session) {
+              router.push('/login')
+              return
+            }
+            router.push('/auth/callback')
+          } else {
+            router.push('/login')
+          }
         }
         return
       }
 
-      // Handle password reset: com.rounds.social://reset-password#access_token=...
+      // Handle password reset: com.rounds.social://reset-password
       if (url.host === 'reset-password') {
         const hashParams = new URLSearchParams(url.hash.substring(1))
         const accessToken = hashParams.get('access_token')
@@ -73,6 +94,7 @@ if (Capacitor.isNativePlatform()) {
       }
 
     } catch (err) {
+      console.error('Deep link error:', err)
       router.push('/login')
     }
   })

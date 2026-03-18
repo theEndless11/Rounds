@@ -60,6 +60,10 @@
 		<true/>
 	</dict>
 
+	<!-- Encryption compliance - exempt from export regulations -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
 	<!-- Background Modes: push notifications + audio -->
 	<key>UIBackgroundModes</key>
 	<array>
@@ -67,6 +71,12 @@
 		<string>audio</string>
 		<string>fetch</string>
 	</array>
+
+	<!-- Status bar -->
+	<key>UIStatusBarHidden</key>
+	<false/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
 
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
