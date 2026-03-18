@@ -346,13 +346,13 @@
   }
 }
 </style>
-
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/supabase'
 import { useAuthStore } from '@/stores/auth'
 import { Capacitor } from '@capacitor/core'
+import { Browser } from '@capacitor/browser'
 import {
   IonPage,
   IonContent,
@@ -371,37 +371,72 @@ const isProcessing = ref(false)
 
 const getRedirectUrl = () => {
   if (Capacitor.isNativePlatform()) {
-    return 'com.rounds.app://auth/callback'
+    // Use com.rounds.social for iOS, com.rounds.app for Android
+    const scheme = Capacitor.getPlatform() === 'ios' ? 'com.rounds.social' : 'com.rounds.app'
+    return `${scheme}://auth/callback`
   } else {
     return `${window.location.origin}/auth/callback`
   }
 }
 
+const getResetUrl = () => {
+  if (Capacitor.isNativePlatform()) {
+    const scheme = Capacitor.getPlatform() === 'ios' ? 'com.rounds.social' : 'com.rounds.app'
+    return `${scheme}://reset-password`
+  } else {
+    return `${window.location.origin}/reset-password`
+  }
+}
+
 async function handleGoogleSignIn() {
   if (isProcessing.value) return
-  
+
   isProcessing.value = true
   loading.value = true
   error.value = ''
   successMessage.value = ''
 
   try {
-    const { data, error: signInError } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: getRedirectUrl(),
-        skipBrowserRedirect: false
-      }
-    })
+    if (Capacitor.isNativePlatform()) {
+      // On native, get the OAuth URL first then open in-app browser
+      const { data, error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: getRedirectUrl(),
+          skipBrowserRedirect: true  // Don't auto-redirect, we handle it
+        }
+      })
 
-    if (signInError) {
-      error.value = signInError.message
+      if (signInError) {
+        error.value = signInError.message
+        return
+      }
+
+      if (data?.url) {
+        // Open in Capacitor in-app browser so deep link redirect works
+        await Browser.open({
+          url: data.url,
+          windowName: '_self'
+        })
+      }
+    } else {
+      // Web: normal OAuth flow
+      const { error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: getRedirectUrl(),
+          skipBrowserRedirect: false
+        }
+      })
+
+      if (signInError) {
+        error.value = signInError.message
+      }
     }
   } catch (err) {
     console.error('Google sign in error:', err)
     error.value = 'Failed to sign in with Google'
   } finally {
-    // Don't reset loading immediately for OAuth as redirect happens
     setTimeout(() => {
       loading.value = false
       isProcessing.value = false
@@ -411,7 +446,7 @@ async function handleGoogleSignIn() {
 
 async function handleLogin() {
   if (isProcessing.value) return
-  
+
   if (!email.value || !password.value) {
     error.value = 'Please enter email and password'
     return
@@ -430,22 +465,16 @@ async function handleLogin() {
 
     if (loginError) {
       if (loginError.message.includes('Email not confirmed')) {
-        error.value = `Please confirm your email before logging in.
-
-Check your inbox (${email.value}) for the confirmation link we sent you.
-
-Have not received it? Check your spam folder.`
+        error.value = `Please confirm your email before logging in.\n\nCheck your inbox (${email.value}) for the confirmation link we sent you.\n\nHave not received it? Check your spam folder.`
       } else {
         error.value = 'Invalid email or password. Please try again.'
       }
       return
     }
 
-    // Update auth store
     authStore.user = data.user
     authStore.session = data.session
-    
-    // Check for profile
+
     const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('*')
@@ -457,11 +486,9 @@ Have not received it? Check your spam folder.`
       return
     }
 
-    // Clear form
     email.value = ''
     password.value = ''
 
-    // Navigate based on profile completion
     if (!profile) {
       await router.replace('/complete-profile')
     } else {
@@ -483,7 +510,7 @@ function navigateToSignup() {
 
 async function handleForgotPassword() {
   if (isProcessing.value) return
-  
+
   if (!email.value) {
     error.value = 'Please enter your email address first'
     return
@@ -495,15 +522,9 @@ async function handleForgotPassword() {
   successMessage.value = ''
 
   try {
-    const resetUrl = Capacitor.isNativePlatform() 
-      ? 'com.rounds.app://reset-password'
-      : `${window.location.origin}/reset-password`
-
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      email.value.trim(), 
-      {
-        redirectTo: resetUrl
-      }
+      email.value.trim(),
+      { redirectTo: getResetUrl() }
     )
 
     if (resetError) {
@@ -520,12 +541,10 @@ async function handleForgotPassword() {
   }
 }
 
-// Clear any stale auth state on mount
 onMounted(async () => {
   try {
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
-      // User already logged in, redirect
       await router.replace('/tabs/home')
     }
   } catch (err) {
@@ -533,4 +552,3 @@ onMounted(async () => {
   }
 })
 </script>
-

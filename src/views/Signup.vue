@@ -100,6 +100,7 @@ import { useRouter } from 'vue-router'
 import { supabase } from '@/supabase'
 import { useAuthStore } from '@/stores/auth'
 import { Capacitor } from '@capacitor/core'
+import { Browser } from '@capacitor/browser'
 import {
   IonPage,
   IonContent,
@@ -118,7 +119,8 @@ const isProcessing = ref(false)
 
 const getRedirectUrl = () => {
   if (Capacitor.isNativePlatform()) {
-    return 'com.rounds.app://auth/callback'
+    const scheme = Capacitor.getPlatform() === 'ios' ? 'com.rounds.social' : 'com.rounds.app'
+    return `${scheme}://auth/callback`
   } else {
     return `${window.location.origin}/auth/callback`
   }
@@ -126,29 +128,50 @@ const getRedirectUrl = () => {
 
 async function handleGoogleSignIn() {
   if (isProcessing.value) return
-  
+
   isProcessing.value = true
   loading.value = true
   error.value = ''
   successMessage.value = ''
 
   try {
-    const { data, error: signInError } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: getRedirectUrl(),
-        skipBrowserRedirect: false
-      }
-    })
+    if (Capacitor.isNativePlatform()) {
+      const { data, error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: getRedirectUrl(),
+          skipBrowserRedirect: true
+        }
+      })
 
-    if (signInError) {
-      error.value = signInError.message
+      if (signInError) {
+        error.value = signInError.message
+        return
+      }
+
+      if (data?.url) {
+        await Browser.open({
+          url: data.url,
+          windowName: '_self'
+        })
+      }
+    } else {
+      const { error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: getRedirectUrl(),
+          skipBrowserRedirect: false
+        }
+      })
+
+      if (signInError) {
+        error.value = signInError.message
+      }
     }
   } catch (err) {
     console.error('Google sign in error:', err)
     error.value = 'Failed to sign in with Google'
   } finally {
-    // Don't reset loading immediately for OAuth as redirect happens
     setTimeout(() => {
       loading.value = false
       isProcessing.value = false
@@ -158,7 +181,7 @@ async function handleGoogleSignIn() {
 
 async function handleSignup() {
   if (isProcessing.value) return
-  
+
   if (!email.value || !password.value) {
     error.value = 'Please enter email and password'
     return
@@ -175,15 +198,6 @@ async function handleSignup() {
   successMessage.value = ''
 
   try {
-    // First check if user already exists
-    const { data: existingUser } = await supabase
-      .from('auth.users')
-      .select('email')
-      .eq('email', email.value.trim())
-      .maybeSingle()
-
-    // Alternative check using RPC or auth admin (if you have access)
-    // Try to sign up - Supabase will handle duplicate detection
     const { data, error: signupError } = await supabase.auth.signUp({
       email: email.value.trim(),
       password: password.value,
@@ -193,8 +207,7 @@ async function handleSignup() {
     })
 
     if (signupError) {
-      // Check for specific error types
-      if (signupError.message.includes('User already registered') || 
+      if (signupError.message.includes('User already registered') ||
           signupError.message.includes('already been registered')) {
         error.value = `An account with ${email.value} already exists. Please login instead or use a different email address.`
       } else if (signupError.message.includes('password')) {
@@ -210,39 +223,24 @@ async function handleSignup() {
       return
     }
 
-    // Additional check: if user exists but no session, likely already registered
     if (data.user && !data.session && data.user.identities && data.user.identities.length === 0) {
       error.value = `An account with ${email.value} already exists. Please login instead.`
       return
     }
 
-    // Check if email confirmation is required
     if (data.session) {
-      // Auto-confirmed (email confirmation disabled in Supabase)
       authStore.user = data.user
       authStore.session = data.session
       successMessage.value = 'Account created successfully! Redirecting...'
-      
-      // Clear form
       email.value = ''
       password.value = ''
-      
       setTimeout(() => {
         router.replace('/complete-profile')
       }, 1000)
     } else {
-      // Email confirmation required
-      successMessage.value = `We have sent a confirmation email to ${email.value}
-
-Please check your email inbox and click on the confirmation link to activate your account. Once confirmed, you will be able to log in and access all features.
-
-The email should arrive within a few minutes. If you do not see it, please check your spam or junk folder.`
-      
-      // Clear form
+      successMessage.value = `We have sent a confirmation email to ${email.value}\n\nPlease check your email inbox and click on the confirmation link to activate your account. Once confirmed, you will be able to log in and access all features.\n\nThe email should arrive within a few minutes. If you do not see it, please check your spam or junk folder.`
       email.value = ''
       password.value = ''
-      
-      // Show message for 8 seconds, then redirect to login
       setTimeout(() => {
         router.push('/login')
       }, 8000)
@@ -261,12 +259,10 @@ function navigateToLogin() {
   router.push('/login')
 }
 
-// Clear any stale auth state on mount
 onMounted(async () => {
   try {
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
-      // User already logged in, redirect
       await router.replace('/tabs/home')
     }
   } catch (err) {
