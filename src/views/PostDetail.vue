@@ -65,10 +65,46 @@ ion-content{--background:var(--background)}
 .comments-list{padding:0}
 .input-avatar{width:32px;height:32px;flex-shrink:0}
 .avatar-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-weight:700;font-size:13px;border-radius:50%}
-.comment-input{flex:1;background:var(--input-background);border-radius:18px;padding:8px 14px;color:var(--text-primary);font-size:14px;resize:none;font-family:inherit;outline:none;max-height:120px;overflow-y:auto;transition:border-color .2s}
+.comment-input{
+  flex:1;
+  background:var(--input-background);
+  border-radius:18px;
+  padding:8px 14px;
+  color:var(--text-primary);
+  /* KEY FIX: 16px prevents iOS auto-zoom on focus */
+  font-size:16px;
+  resize:none;
+  font-family:inherit;
+  outline:none;
+  max-height:120px;
+  overflow-y:auto;
+  transition:border-color .2s;
+  /* iOS fixes */
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  -webkit-appearance:none;
+  appearance:none;
+}
 .comment-input:focus{border-color:#667eea}
 .comment-input::placeholder{color:var(--placeholder-color)}
-.send-btn{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0}
+.send-btn{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  border:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:all .2s;
+  flex-shrink:0;
+  /* iOS fixes */
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  -webkit-appearance:none;
+  appearance:none;
+}
 .send-btn:hover:not(:disabled){transform:scale(1.05);filter:brightness(1.1)}
 .send-btn:disabled{background:#333;cursor:not-allowed;opacity:.5}
 :global(body.light) .send-btn:disabled{background:#ccc}

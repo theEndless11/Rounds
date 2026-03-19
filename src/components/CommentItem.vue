@@ -88,6 +88,145 @@
   </div>
 </template>
 
+<style scoped>
+.comment-wrapper{background:var(--background);}
+.comment-item{display:flex;gap:10px;padding:10px 12px;margin-left: 10px;}
+.comment-avatar{width:34px;height:34px;flex-shrink:0;cursor:pointer}
+.avatar-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-weight:700;font-size:14px;border-radius:50%;}
+.comment-content{flex:1;min-width:0}
+.comment-header{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.user-name{color:var(--text-primary);font-weight:600;font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.user-name:hover{text-decoration:underline}
+.timestamp{color:var(--text-secondary);font-size:12px}
+.comment-text{color:var(--text-primary);font-size:14px;line-height:1.45;margin-bottom:7px;word-wrap:break-word}
+.comment-text strong{font-weight:700;color:var(--text-primary)}
+.comment-text em{font-style:italic;color:var(--text-primary)}
+.comment-text del{text-decoration:line-through;color:var(--text-secondary);opacity:.7}
+.comment-text code{background:var(--code-background);border:1px solid var(--border-color);border-radius:3px;padding:2px 5px;font-family:'Courier New',monospace;font-size:.85em;color:#8b9aff}
+body.light .comment-text code{color:#5b6fd8}
+.comment-text h1,.comment-text h2,.comment-text h3{margin:8px 0 4px;font-weight:600;color:var(--text-primary)}
+.comment-text h1{font-size:1.4em}
+.comment-text h2{font-size:1.2em}
+.comment-text h3{font-size:1.1em}
+.comment-text blockquote{border-left:3px solid #667eea;background:rgba(102,126,234,.05);padding:6px 10px;margin:6px 0;color:var(--text-secondary);font-style:italic;border-radius:4px}
+body.light .comment-text blockquote{background:rgba(102,126,234,.08)}
+.comment-text ul,.comment-text ol{margin:6px 0;padding-left:20px}
+.comment-text li{margin:3px 0;color:var(--text-primary)}
+.comment-actions{display:flex;align-items:center;gap:4px;margin-top:2px}
+.action-btn{--color:var(--text-secondary);font-size:13px;height:28px;--padding-start:4px;--padding-end:4px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.action-btn:hover{--color:#667eea}
+.action-btn ion-icon{font-size:18px;margin-right:2px}
+.action-btn .liked{color:var(--text-secondary)!important;animation:heartPop 0.3s ease}
+@keyframes heartPop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.action-btn span{font-size:13px;font-weight:500;margin-left:2px}
+
+/* Delete button styling */
+.delete-btn{--color:#ef4444!important}
+.delete-btn:hover{--color:#dc2626!important}
+.delete-btn:disabled{--color:#666!important;opacity:0.5;cursor:not-allowed}
+
+/* Replies Section */
+.replies-section{margin-top:8px;position:relative;padding-left:20px}
+.replies-section::before{content:'';position:absolute;left:-30px;top:-55px;bottom:-10px;width:2px;background:var(--border-color);pointer-events:none;}
+.reply-wrapper{position:relative;margin-bottom:2px}
+.reply-wrapper:last-child{margin-bottom:0}
+.thread-line{position:absolute;left:-50px;top:29px;width:68px;height:25px;border-left:2px solid var(--border-color);border-bottom:2px solid var(--border-color);border-bottom-left-radius:30px;pointer-events:none;}
+.replies-section .replies-section::before{left:-24px;top:-45px;}
+.replies-section .replies-section .thread-line{left:-43px;width:60px;}
+body.light .thread-line{border-color:#e5e7eb}
+.replies-section .comment-item{padding:8px 0;border-bottom:none;margin-left:0}
+.replies-section .comment-avatar{width:30px;height:30px}
+.replies-section .avatar-placeholder{font-size:13px;border-radius:50%;}
+
+/* Reply input section */
+.reply-input-section{display:flex;align-items:flex-end;gap:8px;margin-top:10px;padding:10px;background:var(--background-secondary);border-radius:12px;border:1px solid var(--border-color)}
+.reply-avatar{width:30px;height:30px;flex-shrink:0}
+.avatar-placeholder-small{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-weight:700;font-size:12px;border-radius:50%;}
+.reply-input{
+  flex:1;
+  background:var(--input-background);
+  border:1px solid var(--border-color);
+  border-radius:16px;
+  padding:8px 12px;
+  color:var(--text-primary);
+  /* KEY FIX: 16px prevents iOS auto-zoom on focus */
+  font-size:16px;
+  resize:none;
+  font-family:inherit;
+  outline:none;
+  max-height:100px;
+  overflow-y:auto;
+  transition:border-color .2s;
+  /* iOS fixes */
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.reply-input:focus{border-color:#667eea}
+.reply-input::placeholder{color:var(--text-secondary)}
+.reply-send-btn{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  border:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:all .2s;
+  flex-shrink:0;
+  /* iOS fixes */
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.reply-send-btn:hover:not(:disabled){transform:scale(1.05);filter:brightness(1.1)}
+.reply-send-btn:disabled{background:#333;cursor:not-allowed;opacity:.5}
+body.light .reply-send-btn:disabled{background:#ccc}
+.reply-send-btn ion-icon{font-size:16px;color:#fff}
+
+/* Delete Confirmation Modal */
+.delete-modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9999;padding:20px;
+  backdrop-filter:blur(4px);
+  animation:fadeIn 0.2s ease;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.delete-modal{
+  background:var(--background);border-radius:16px;max-width:400px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  animation:slideUp 0.3s ease;
+  border:1px solid var(--border-color);
+}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.delete-modal-header{padding:20px 20px 10px;border-bottom:1px solid var(--border-color);}
+.delete-modal-header h3{margin:0;font-size:18px;font-weight:600;color:var(--text-primary);}
+.delete-modal-body{padding:20px;}
+.delete-modal-body p{margin:0;color:var(--text-secondary);font-size:14px;line-height:1.5;}
+.delete-modal-actions{padding:10px 20px 20px;display:flex;gap:10px;justify-content:flex-end;}
+.modal-btn{
+  padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;border:none;font-family:inherit;
+  /* iOS fixes */
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.cancel-btn{background:var(--background-secondary);color:var(--text-primary);border:1px solid var(--border-color);}
+.cancel-btn:hover{background:var(--border-color);}
+.confirm-btn{background:#ef4444;color:#fff;}
+.confirm-btn:hover:not(:disabled){background:#dc2626;transform:translateY(-1px);box-shadow:0 4px 12px rgba(239,68,68,0.3);}
+.confirm-btn:disabled{background:#666;cursor:not-allowed;opacity:0.6;}
+body.light .confirm-btn:disabled{background:#ccc;}
+</style>
+
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
@@ -464,213 +603,5 @@ function formatDate(dateString) {
 }
 </script>
 
-<style scoped>
-.comment-wrapper{background:var(--background);}
-.comment-item{display:flex;gap:10px;padding:10px 12px;margin-left: 10px;}
-.comment-avatar{width:34px;height:34px;flex-shrink:0;cursor:pointer}
-.avatar-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-weight:700;font-size:14px;border-radius:50%;}
-.comment-content{flex:1;min-width:0}
-.comment-header{display:flex;align-items:center;gap:8px;margin-bottom:5px}
-.user-name{color:var(--text-primary);font-weight:600;font-size:14px;cursor:pointer}
-.user-name:hover{text-decoration:underline}
-.timestamp{color:var(--text-secondary);font-size:12px}
-.comment-text{color:var(--text-primary);font-size:14px;line-height:1.45;margin-bottom:7px;word-wrap:break-word}
-.comment-text strong{font-weight:700;color:var(--text-primary)}
-.comment-text em{font-style:italic;color:var(--text-primary)}
-.comment-text del{text-decoration:line-through;color:var(--text-secondary);opacity:.7}
-.comment-text code{background:var(--code-background);border:1px solid var(--border-color);border-radius:3px;padding:2px 5px;font-family:'Courier New',monospace;font-size:.85em;color:#8b9aff}
-body.light .comment-text code{color:#5b6fd8}
-.comment-text h1,.comment-text h2,.comment-text h3{margin:8px 0 4px;font-weight:600;color:var(--text-primary)}
-.comment-text h1{font-size:1.4em}
-.comment-text h2{font-size:1.2em}
-.comment-text h3{font-size:1.1em}
-.comment-text blockquote{border-left:3px solid #667eea;background:rgba(102,126,234,.05);padding:6px 10px;margin:6px 0;color:var(--text-secondary);font-style:italic;border-radius:4px}
-body.light .comment-text blockquote{background:rgba(102,126,234,.08)}
-.comment-text ul,.comment-text ol{margin:6px 0;padding-left:20px}
-.comment-text li{margin:3px 0;color:var(--text-primary)}
-.comment-actions{display:flex;align-items:center;gap:4px;margin-top:2px}
-.action-btn{--color:var(--text-secondary);font-size:13px;height:28px;--padding-start:4px;--padding-end:4px}
-.action-btn:hover{--color:#667eea}
-.action-btn ion-icon{font-size:18px;margin-right:2px}
-.action-btn .liked{color:var(--text-secondary)!important;animation:heartPop 0.3s ease}
-@keyframes heartPop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
-.action-btn span{font-size:13px;font-weight:500;margin-left:2px}
 
-
-/* Delete button styling */
-.delete-btn{--color:#ef4444!important}
-.delete-btn:hover{--color:#dc2626!important}
-.delete-btn:disabled{--color:#666!important;opacity:0.5;cursor:not-allowed}
-
-/* Replies Section - Fixed positioning */
-.replies-section{margin-top:8px;position:relative;padding-left:20px}
-
-/* Main vertical line that runs through all replies */
-.replies-section::before{
-  content:'';
-  position:absolute;
-  left:-30px;
-  top:-55px;
-  bottom:-10px;
-  width:2px;
-  background:var(--border-color);
-  pointer-events:none;
-}
-
-.reply-wrapper{position:relative;margin-bottom:2px}
-.reply-wrapper:last-child{margin-bottom:0}
-
-/* Thread line - just the horizontal curved connector to the vertical line */
-/* Thread line - curved connector from vertical line to reply */
-.thread-line{
-  position:absolute;
-  left:-50px;
-  top:29px;
-  width:68px;
-  height:25px;
-  border-left:2px solid var(--border-color);
-  border-bottom:2px solid var(--border-color);
-  border-bottom-left-radius:30px;
-  pointer-events:none;
-}
-
-/* Nested replies need their own vertical line */
-.replies-section .replies-section::before{
-  left:-24px;
-  top:-45px;
-}
-
-.replies-section .replies-section .thread-line{
-  left:-43px;
-  width:60px;
-}
-body.light .thread-line{border-color:#e5e7eb}
-
-/* Nested reply items styling */
-.replies-section .comment-item{padding:8px 0;border-bottom:none;margin-left:0}
-.replies-section .comment-avatar{width:30px;height:30px}
-.replies-section .avatar-placeholder{font-size:13px;border-radius:50%;}
-
-/* Reply input section */
-.reply-input-section{display:flex;align-items:flex-end;gap:8px;margin-top:10px;padding:10px;background:var(--background-secondary);border-radius:12px;border:1px solid var(--border-color)}
-.reply-avatar{width:30px;height:30px;flex-shrink:0}
-.avatar-placeholder-small{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-weight:700;font-size:12px;border-radius:50%;}
-.reply-input{flex:1;background:var(--input-background);border:1px solid var(--border-color);border-radius:16px;padding:8px 12px;color:var(--text-primary);font-size:14px;resize:none;font-family:inherit;outline:none;max-height:100px;overflow-y:auto;transition:border-color .2s}
-.reply-input:focus{border-color:#667eea}
-.reply-input::placeholder{color:var(--text-secondary)}
-.reply-send-btn{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0}
-.reply-send-btn:hover:not(:disabled){transform:scale(1.05);filter:brightness(1.1)}
-.reply-send-btn:disabled{background:#333;cursor:not-allowed;opacity:.5}
-body.light .reply-send-btn:disabled{background:#ccc}
-.reply-send-btn ion-icon{font-size:16px;color:#fff}
-
-/* Delete Confirmation Modal */
-.delete-modal-overlay{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  bottom:0;
-  background:rgba(0,0,0,0.6);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-  padding:20px;
-  backdrop-filter:blur(4px);
-  animation:fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn{
-  from{opacity:0}
-  to{opacity:1}
-}
-
-.delete-modal{
-  background:var(--background);
-  border-radius:16px;
-  max-width:400px;
-  width:100%;
-  box-shadow:0 20px 60px rgba(0,0,0,0.3);
-  animation:slideUp 0.3s ease;
-  border:1px solid var(--border-color);
-}
-
-@keyframes slideUp{
-  from{transform:translateY(20px);opacity:0}
-  to{transform:translateY(0);opacity:1}
-}
-
-.delete-modal-header{
-  padding:20px 20px 10px;
-  border-bottom:1px solid var(--border-color);
-}
-
-.delete-modal-header h3{
-  margin:0;
-  font-size:18px;
-  font-weight:600;
-  color:var(--text-primary);
-}
-
-.delete-modal-body{
-  padding:20px;
-}
-
-.delete-modal-body p{
-  margin:0;
-  color:var(--text-secondary);
-  font-size:14px;
-  line-height:1.5;
-}
-
-.delete-modal-actions{
-  padding:10px 20px 20px;
-  display:flex;
-  gap:10px;
-  justify-content:flex-end;
-}
-
-.modal-btn{
-  padding:10px 20px;
-  border-radius:8px;
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.2s;
-  border:none;
-  font-family:inherit;
-}
-
-.cancel-btn{
-  background:var(--background-secondary);
-  color:var(--text-primary);
-  border:1px solid var(--border-color);
-}
-
-.cancel-btn:hover{
-  background:var(--border-color);
-}
-
-.confirm-btn{
-  background:#ef4444;
-  color:#fff;
-}
-
-.confirm-btn:hover:not(:disabled){
-  background:#dc2626;
-  transform:translateY(-1px);
-  box-shadow:0 4px 12px rgba(239,68,68,0.3);
-}
-
-.confirm-btn:disabled{
-  background:#666;
-  cursor:not-allowed;
-  opacity:0.6;
-}
-
-body.light .confirm-btn:disabled{
-  background:#ccc;
-}
-</style>
 
