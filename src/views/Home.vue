@@ -1,9 +1,9 @@
 <template>
   <ion-page>
     <ion-header 
-      v-show="!isHeaderHidden"
-      ref="headerRef"
-    >
+  v-show="!isHeaderHidden"
+  ref="headerRef"
+>
      <link href="https://api.fontshare.com/v2/css?f[]=chillax@600&display=swap" rel="stylesheet">
       <ion-toolbar>
         <!-- Profile Picture on Left -->
@@ -129,52 +129,17 @@
   </ion-page>
 </template>
 
-<style scoped>
-.loading-container {
-  margin-top: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  will-change: transform;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.empty-state {
-  text-align: center;
-  color: var(--text-secondary);
-  margin-top: 60px;
-  font-size: 15px;
-}
-
-ion-title {
-  padding: 0;
-}
-
-ion-header {
-  border-bottom: 1px solid var(--border-color);
-}
-</style>
-
 <script setup>
 import { ref, computed, onMounted, inject, defineAsyncComponent } from 'vue'
+
 import { useRoute } from 'vue-router'
 import { supabase } from '@/supabase'
-import { useIonRouter } from '@ionic/vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+
+import { useIonRouter } from '@ionic/vue'
+
+import { blackFadeAnimation } from '@/animations/blackFade'
 
 const PostCard = defineAsyncComponent(() => import('../components/PostCard.vue'))
 
@@ -197,6 +162,7 @@ import { search, close } from 'ionicons/icons'
 
 const authStore = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 const ionRouter = useIonRouter()
 
 const activeTab = ref('forYou')
@@ -243,24 +209,20 @@ const displayedPosts = computed(() => {
 })
 
 function navigateToProfile() {
-  ionRouter.push('/tabs/profile', 'forward')
+  ionRouter.push('/tabs/profile', blackFadeAnimation)
 }
 
 function navigateToSearch() {
-  ionRouter.push('/tabs/search', 'forward')
+  ionRouter.push('/tabs/search', blackFadeAnimation)
 }
 
 function navigateToTag(tag) {
-  ionRouter.push({ 
-    path: '/tabs/home', 
-    query: { tag: tag } 
-  }, 'forward')
+  router.push({ path: '/tabs/home', query: { tag: tag } })
 }
 
 function clearFilter() {
-  ionRouter.push({ path: '/tabs/home' }, 'back')
+  router.push({ path: '/tabs/home' })
 }
-
 function handleScroll(event) {
   const scrollTop = event.detail.scrollTop
   const scrollDelta = scrollTop - lastScrollTop
@@ -530,3 +492,44 @@ onMounted(async () => {
   await loadForYouFeed()
 })
 </script>
+
+<style scoped>
+.loading-container {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  will-change: transform;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-top: 60px;
+  font-size: 15px;
+}
+
+ion-title {
+  padding: 0;
+}
+
+ion-header {
+  border-bottom: 1px solid var(--border-color);
+}
+</style>
+

@@ -425,6 +425,11 @@ function dismissBanner() {
   box-sizing: border-box;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
+.ion-page,
+.ion-page-hidden,
+.ion-page-invisible {
+  background: #000 !important;
+}
 
 /* CSS Variables - Dark Mode (Default) */
 :root {

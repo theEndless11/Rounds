@@ -2,7 +2,8 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-button slot="start" fill="clear" @click="router.push('/tabs/home')" style="margin: 0; --padding-start: 8px; --padding-end: 0;margin-left: 5px;">
+        
+        <ion-button slot="start" fill="clear" @click="ionRouter.back(blackFadeAnimation)" style="margin: 0; --padding-start: 8px; --padding-end: 0; margin-left: 5px;">
           <ion-icon :icon="arrowBack" style="color: var(--text-primary); font-size: 24px;"></ion-icon>
         </ion-button>
         
@@ -297,6 +298,10 @@ import FollowersModal from '@/components/FollowersModal.vue'
 import { useDarkMode } from '@/composables/useDarkMode'
 
 import PostCard from '@/components/PostCard.vue'
+
+import { useIonRouter } from '@ionic/vue'
+import { blackFadeAnimation } from '@/animations/blackFade'
+
 import {
   IonPage,
   IonHeader,
@@ -350,6 +355,8 @@ const savedPosts = ref([])
 const userTags = ref([])
 const selectedSegment = ref('posts')
 const loading = ref(true)
+
+const ionRouter = useIonRouter()
 
 const postsCount = ref(0)
 const followersCount = ref(0)
