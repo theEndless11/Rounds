@@ -236,6 +236,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { supabase } from '@/supabase'
 import { Share } from '@capacitor/share'
+import { blackFadeAnimation } from '@/animations/blackFade'
 import { IonButton, IonIcon, IonAvatar, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonFooter, actionSheetController, alertController, toastController } from '@ionic/vue'
 import { heartOutline, heart, chatbubbleOutline, playCircle, play, pause, pulseOutline, close, chevronBack, chevronForward, ellipsisVertical, trashOutline, bookmarkOutline, bookmark, flagOutline, downloadOutline, repeat,shareSocialOutline, shareOutline,banOutline } from 'ionicons/icons'
 
@@ -244,6 +245,7 @@ const emit = defineEmits(['delete', 'repost', 'block-user'])
 const router = useRouter()
 const authStore = useAuthStore()
 const ionRouter = useIonRouter()
+
 
 const postTags = ref([])
 const originalPost = ref(null)
@@ -338,7 +340,7 @@ onMounted(async () => {
   window.viewUserByMention = async (username) => { 
     const { data: user } = await supabase.from('users').select('id').ilike('full_name', username).single(); 
     if (user) { 
-      ionRouter.push(`/user/${user.id}`, 'forward') 
+      ionRouter.push(`/user/${user.id}`, blackFadeAnimation)
     } 
   }; 
   setupZoomListeners() 
@@ -441,7 +443,7 @@ async function deletePost() {
 
 async function toggleBookmark() { 
   if (!authStore.user) { 
-    ionRouter.push('/login', 'forward'); 
+    ionRouter.push('/login', blackFadeAnimation);
     return 
   } 
   try { 
@@ -704,7 +706,7 @@ function nextMedia() {
 }
 
 function navigateToTag(tag) {
-  ionRouter.push({ path: '/tabs/home', query: { tag: tag } }, 'forward')
+  ionRouter.push({ path: '/tabs/home', query: { tag: tag } }, blackFadeAnimation)
 }
 
 function prevSlide() { 
@@ -767,7 +769,7 @@ async function recordView() {
 
 async function toggleLike() { 
   if (!authStore.user) { 
-    ionRouter.push('/login', 'forward'); 
+    ionRouter.push('/login', blackFadeAnimation); 
     return 
   } 
   if (isLiked.value) { 
@@ -812,12 +814,12 @@ function createFloatingHeart(x, y) {
 }
 
 function viewPost() { 
-  ionRouter.push(`/post/${props.post.id}`, 'forward') 
+  ionRouter.push(`/post/${props.post.id}`, blackFadeAnimation)
 }
 
 function openRepostModal() { 
   if (!authStore.user) { 
-    ionRouter.push('/login', 'forward'); 
+    ionRouter.push('/login', blackFadeAnimation)
     return 
   } 
   isRepostModalOpen.value = true; 
@@ -848,18 +850,18 @@ async function submitRepost() {
 
 function navigateToOriginal() {
   if (props.post.repost_of) {
-    ionRouter.push(`/post/${props.post.repost_of}`, 'forward')
+    ionRouter.push(`/post/${props.post.repost_of}`, blackFadeAnimation)
   }
 }
 
 function openComments() { 
-  ionRouter.push(`/post/${props.post.id}`, 'forward') 
+  ionRouter.push(`/post/${props.post.id}`, blackFadeAnimation)
 }
 
 function viewUserProfile() {
   const userId = props.post.user_id
   if (userId) {
-    ionRouter.push(`/user/${userId}`, 'forward')
+    ionRouter.push(`/user/${userId}`, blackFadeAnimation)
   }
 }
 

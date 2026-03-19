@@ -419,43 +419,29 @@ function dismissBanner() {
 </script>
 
 <style>
-/* Global Reset & Scrollbar */
-* {
-  margin: 0;
-  box-sizing: border-box;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-}
-.ion-page,
-.ion-page-hidden,
-.ion-page-invisible {
-  background: #000 !important;
-}
-
 /* CSS Variables - Dark Mode (Default) */
 :root {
   --background: #000000;
-  --background-secondary: #111;
-  --text-primary: #fff;
-  --text-secondary: #888;
-  --text-tertiary: #444;
-  --border-color: #333;
-  --card-background: #000;
-  --card-hover: #0a0a0a;
-  --input-background: #111;
-  --placeholder-color: #666;
-  --scrollbar-track: #000;
+  --background-secondary: #111111;
+  --text-primary: #ffffff;
+  --text-secondary: #8b98a5;
+  --border-color: #2f3336;
+  --card-background: #111111;
+  --card-hover: #1a1a1a;
+  --input-background: #1a1a1a;
+  --placeholder-color: #536471;
+  --scrollbar-track: #111111;
   --scrollbar-thumb: #333;
   --scrollbar-thumb-hover: #555;
-  --media-background: #000;
-  --code-background: #16181c;
-  --quote-background: rgba(255, 255, 255, 0.03);
+  --media-background: #1a1a1a;
+  --code-background: #1a1a1a;
+  --quote-background: rgba(255, 255, 255, 0.05);
   --shimmer-start: #1a1a1a;
   --shimmer-mid: #2a2a2a;
-  --video-background: #000;
-  --modal-background: #000;
-  --modal-text: #fff;
+  --video-background: #000000;
+  --modal-background: #111111;
+  --modal-text: #ffffff;
 }
-
 /* CSS Variables - Light Mode */
 body.light {
   --background: #ffffff;
@@ -481,46 +467,47 @@ body.light {
 }
 
 /* ============================================
-   iOS SAFE AREA FIXES
+   iOS / ANDROID SAFE AREA FIXES
    ============================================ */
 
-/* Cover the status bar and home indicator areas on iOS */
-html {
-  background-color: #000000;
+html, body {
+  background-color: #000000 !important;
   height: 100%;
-}
-
-body {
-  background-color: #000000;
-  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body.light {
-  background-color: #ffffff;
+  background-color: #ffffff !important;
 }
 
-body.light html {
-  background-color: #ffffff;
-}
-
-/* Ensure ion-app fills entire screen including safe areas */
+/* Extend ion-app to fill entire screen including safe areas */
 ion-app {
-  background-color: #000000;
-  /* Extend background into safe areas */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  margin-top: calc(-1 * env(safe-area-inset-top));
-  margin-bottom: calc(-1 * env(safe-area-inset-bottom));
+  background-color: #000000 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
 }
 
 body.light ion-app {
-  background-color: #ffffff;
+  background-color: #ffffff !important;
 }
 
-/* Tab bar should respect bottom safe area */
+/* Header must cover status bar area on iOS */
+ion-header {
+  background-color: var(--background) !important;
+}
+
+ion-header ion-toolbar:first-child {
+  padding-top: env(safe-area-inset-top) !important;
+}
+
+/* Tab bar bottom safe area for home indicator */
 ion-tab-bar {
-  padding-bottom: env(safe-area-inset-bottom);
-  height: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom) !important;
+  height: calc(56px + env(safe-area-inset-bottom)) !important;
 }
 
 /* ============================================
@@ -578,6 +565,8 @@ ion-header ion-toolbar {
 }
 
 body.light ion-header ion-toolbar {
+  --background: #ffffff;
+  --color: #0f1419;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -590,6 +579,7 @@ ion-tab-bar {
 }
 
 body.light ion-tab-bar {
+  --background: #ffffff;
   box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -723,7 +713,7 @@ ion-toast {
 
 .verification-banner {
   position: fixed;
-  top: 80%;
+  top: 83%;
   left: 0;
   right: 0;
   z-index: 9999;
@@ -732,7 +722,7 @@ ion-toast {
   justify-content: space-between;
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
-  padding: 10px 12px;
+  padding: 6px 12px;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
   animation: slideUp 0.3s ease-out;
 }

@@ -24,7 +24,7 @@
         
         <!-- Centered Rounds Text -->
         <ion-title style="text-align: center;">
-          <span style="font-family: 'Chillax', sans-serif; font-size: 25px; font-weight: 200; color: #fff; letter-spacing: 0.5px;">rounds</span>
+          <span style="font-family: 'Chillax', sans-serif; font-size: 25px; font-weight: 200; color: #1A5FA8; letter-spacing: 0.5px;">rounds</span>
         </ion-title>
         
         <!-- Search Icon on Right -->
