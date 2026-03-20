@@ -2,7 +2,6 @@
 <div 
   class="post-card" 
   @click="viewPost" 
-  @dblclick="handleDoubleTap"
 >
   <div class="post-header">
     <div class="avatar-row">
@@ -813,9 +812,15 @@ function createFloatingHeart(x, y) {
   setTimeout(() => heart.remove(), 1000) 
 }
 
-function viewPost() { 
+function viewPost() {
+  const currentTime = new Date().getTime()
+  const tapLength = currentTime - lastTap
+  // Don't navigate if it was a double tap
+  if (tapLength < 300 && tapLength > 0) return
+  lastTap = currentTime
   ionRouter.push(`/post/${props.post.id}`, blackFadeAnimation)
 }
+
 
 function openRepostModal() { 
   if (!authStore.user) { 

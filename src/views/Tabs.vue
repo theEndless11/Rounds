@@ -43,6 +43,92 @@
   </ion-page>
 </template>
 
+<style scoped>
+ion-tab-bar {
+  --background: #000;
+  --border-color: #1a1a1a;
+  height: calc(46px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+body.light ion-tab-bar {
+  --background: #fff;
+  --border-color: #e5e5e5;
+}
+
+ion-tab-button ion-icon {
+  color: #999;
+  font-size: 22px;
+  margin-bottom: 1px;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.light ion-tab-button ion-icon {
+  color: #666;
+}
+
+ion-tab-button ion-label {
+  color: #888;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  margin-top: 0;
+}
+
+body.light ion-tab-button ion-label {
+  color: #666;
+}
+
+ion-tab-button.tab-selected ion-icon,
+ion-tab-button.tab-selected ion-label {
+  color: #fff;
+}
+
+body.light ion-tab-button.tab-selected ion-icon,
+body.light ion-tab-button.tab-selected ion-label {
+  color: #000;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  ion-tab-button:hover ion-icon,
+  ion-tab-button:hover ion-label { color: #ccc; }
+  body.light ion-tab-button:hover ion-icon,
+  body.light ion-tab-button:hover ion-label { color: #333; }
+}
+
+.create-tab ion-icon {
+  font-size: 24px;
+  margin-bottom: 1px;
+}
+.create-tab ion-label {
+  font-size: 10px;
+  font-weight: 600;
+}
+.create-tab.tab-selected ion-icon {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+</style>
+
+<!--
+  IMPORTANT: ::part() selectors cannot pierce shadow DOM from a scoped style block.
+  This unscoped <style> block is required to actually reach inside ion-tab-button's
+  shadow DOM and kill the default top/bottom padding that causes the gaps.
+-->
+<style>
+ion-tab-button::part(native) {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  min-height: unset !important;
+  height: 100% !important;
+}
+</style>
+
 <script setup>
 import { ref, onMounted, onUnmounted, provide, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -234,92 +320,3 @@ function setupRealtimeSubscriptions() {
     .subscribe()
 }
 </script>
-
-<style scoped>
-/* Tab bar background */
-ion-tab-bar {
-  --background: #000;
-  --border-color: #1a1a1a;
-
-  /* iOS safe area support */
-  padding-bottom: env(safe-area-inset-bottom);
-  height: calc(49px + env(safe-area-inset-bottom));
-}
-
-body.light ion-tab-bar {
-  --background: #fff;
-  --border-color: #e5e5e5;
-}
-
-/* Icons */
-ion-tab-button ion-icon {
-  color: #999;
-  font-size: 24px; /* reduced from implicit ~26px */
-  transition: color 0.2s ease;
-
-  /* iOS tap highlight removal */
-  -webkit-tap-highlight-color: transparent;
-}
-
-body.light ion-tab-button ion-icon {
-  color: #666;
-}
-
-/* Labels */
-ion-tab-button ion-label {
-  color: #888;
-  font-size: 10px; /* reduced from 11px */
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: color 0.2s ease;
-
-  /* Sharper text on retina */
-  -webkit-font-smoothing: antialiased;
-}
-
-body.light ion-tab-button ion-label {
-  color: #666;
-}
-
-/* Active tab */
-ion-tab-button.tab-selected ion-icon,
-ion-tab-button.tab-selected ion-label {
-  color: #fff;
-}
-
-body.light ion-tab-button.tab-selected ion-icon,
-body.light ion-tab-button.tab-selected ion-label {
-  color: #000;
-}
-
-/* Hover — desktop only, skip on touch devices */
-@media (hover: hover) and (pointer: fine) {
-  ion-tab-button:hover ion-icon,
-  ion-tab-button:hover ion-label {
-    color: #ccc;
-  }
-
-  body.light ion-tab-button:hover ion-icon,
-  body.light ion-tab-button:hover ion-label {
-    color: #333;
-  }
-}
-
-/* Create button */
-.create-tab ion-icon {
-  font-size: 22px; /* reduced from 24px */
-  margin-bottom: 2px;
-}
-
-.create-tab ion-label {
-  font-size: 11px; /* reduced from 12px */
-  font-weight: 600;
-}
-
-.create-tab.tab-selected ion-icon {
-  transform: scale(1.1);
-  transition: transform 0.2s ease;
-}
-</style>
