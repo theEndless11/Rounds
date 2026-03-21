@@ -419,7 +419,9 @@ function dismissBanner() {
 </script>
 
 <style>
-/* CSS Variables - Dark Mode (Default) */
+/* ============================================
+   CSS Variables - Dark Mode (Default)
+   ============================================ */
 :root {
   --background: #000000;
   --background-secondary: #111111;
@@ -442,7 +444,10 @@ function dismissBanner() {
   --modal-background: #111111;
   --modal-text: #ffffff;
 }
-/* CSS Variables - Light Mode */
+
+/* ============================================
+   CSS Variables - Light Mode
+   ============================================ */
 body.light {
   --background: #ffffff;
   --background-secondary: #ffffff;
@@ -495,19 +500,38 @@ body.light ion-app {
   background-color: #ffffff !important;
 }
 
-/* Header must cover status bar area on iOS */
+/* ============================================
+   HEADER WHITE LINE FIX
+   ============================================ */
+
+/* Remove white line below status bar */
 ion-header {
-  background-color: var(--background) !important;
+  background-color: #000000 !important;
+}
+
+ion-header::after {
+  display: none !important;
+  background: none !important;
+}
+
+body.light ion-header {
+  background-color: #ffffff !important;
+}
+
+/* Remove toolbar border/shadow that causes white line */
+ion-toolbar {
+  --border-width: 0 !important;
+  --border-color: transparent !important;
+  --box-shadow: none !important;
 }
 
 ion-header ion-toolbar:first-child {
   padding-top: env(safe-area-inset-top) !important;
+  --background: #000000 !important;
 }
 
-/* Tab bar bottom safe area for home indicator */
-ion-tab-bar {
-  padding-bottom: env(safe-area-inset-bottom) !important;
-  height: calc(56px + env(safe-area-inset-bottom)) !important;
+body.light ion-header ion-toolbar:first-child {
+  --background: #ffffff !important;
 }
 
 /* ============================================
@@ -560,14 +584,14 @@ ion-page {
 ion-header ion-toolbar {
   --background: var(--background);
   --color: var(--text-primary);
-  --border-color: var(--border-color);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --border-color: transparent;
+  box-shadow: none;
 }
 
 body.light ion-header ion-toolbar {
   --background: #ffffff;
   --color: #0f1419;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 
 /* Tab Bar Styles */
@@ -575,12 +599,10 @@ ion-tab-bar {
   --background: var(--background-secondary);
   --color: var(--text-secondary);
   border-top: 1px solid var(--border-color);
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
 }
 
 body.light ion-tab-bar {
   --background: #ffffff;
-  box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.05);
 }
 
 ion-tab-button {
@@ -706,7 +728,6 @@ ion-toast {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
 }
-
 /* ============================================
    VERIFICATION BANNER
    ============================================ */

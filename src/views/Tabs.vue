@@ -46,14 +46,18 @@
 <style scoped>
 ion-tab-bar {
   --background: #000;
-  --border-color: #1a1a1a;
-  height: calc(46px + env(safe-area-inset-bottom));
-  padding-bottom: env(safe-area-inset-bottom);
+  --border-color: transparent;
+  border-top: 1px solid #1a1a1a;
+  /* Fixed height - do NOT use calc with safe-area here, 
+     let padding handle the safe area instead */
+  height: 46px;
+  padding-bottom: 0;
 }
 
 body.light ion-tab-bar {
   --background: #fff;
-  --border-color: #e5e5e5;
+  --border-color: transparent;
+  border-top: 1px solid #e5e5e5;
 }
 
 ion-tab-button ion-icon {
@@ -115,17 +119,24 @@ body.light ion-tab-button.tab-selected ion-label {
 }
 </style>
 
-<!--
-  IMPORTANT: ::part() selectors cannot pierce shadow DOM from a scoped style block.
-  This unscoped <style> block is required to actually reach inside ion-tab-button's
-  shadow DOM and kill the default top/bottom padding that causes the gaps.
--->
 <style>
+/* Kill default ion-tab-button padding */
 ion-tab-button::part(native) {
   padding-top: 2px !important;
   padding-bottom: 2px !important;
   min-height: unset !important;
   height: 100% !important;
+}
+
+/* Remove white line above tab bar from ion-tabs */
+ion-tabs::part(container) {
+  border-top: none !important;
+}
+
+/* Fix tab bar safe area - only apply here, not in global CSS */
+.tab-bar-animated {
+  height: calc(46px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
 }
 </style>
 
