@@ -552,13 +552,6 @@ ion-content {
   --overflow: auto;
 }
 
-ion-tab-bar {
-  contain: layout style size;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
 /* ============================================
    GLOBAL STYLES
    ============================================ */
@@ -595,15 +588,7 @@ body.light ion-header ion-toolbar {
 }
 
 /* Tab Bar Styles */
-ion-tab-bar {
-  --background: var(--background-secondary);
-  --color: var(--text-secondary);
-  border-top: 1px solid var(--border-color);
-}
 
-body.light ion-tab-bar {
-  --background: #ffffff;
-}
 
 ion-tab-button {
   --color: var(--text-secondary);

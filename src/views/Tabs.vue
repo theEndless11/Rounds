@@ -44,13 +44,12 @@
 </template>
 
 <style scoped>
+
 ion-tab-bar {
   --background: #000;
   --border-color: transparent;
   border-top: 1px solid #1a1a1a;
-  /* Fixed height - do NOT use calc with safe-area here, 
-     let padding handle the safe area instead */
-  height: 46px;
+  height: 49px;  /* iOS standard tab bar height */
   padding-bottom: 0;
 }
 
@@ -133,9 +132,8 @@ ion-tabs::part(container) {
   border-top: none !important;
 }
 
-/* Fix tab bar safe area - only apply here, not in global CSS */
 .tab-bar-animated {
-  height: calc(46px + env(safe-area-inset-bottom)) !important;
+  height: calc(49px + env(safe-area-inset-bottom)) !important;
   padding-bottom: env(safe-area-inset-bottom) !important;
 }
 </style>
