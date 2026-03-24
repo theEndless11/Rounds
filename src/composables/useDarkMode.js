@@ -6,54 +6,59 @@ import { Capacitor } from '@capacitor/core';
 const THEME_KEY = 'app-theme';
 const isLight = ref(false);
 
+// Apply theme immediately on module load to prevent flash
+const applyThemeToDOM = (light) => {
+  const bgColor = light ? '#ffffff' : '#000000';
+  document.documentElement.style.backgroundColor = bgColor;
+  document.body.style.backgroundColor = bgColor;
+  document.body.classList.toggle('light', light);
+  
+  // Also set a meta theme-color for the browser chrome
+  let meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    document.head.appendChild(meta);
+  }
+  meta.content = bgColor;
+};
+
 export const useDarkMode = () => {
 
   const initTheme = async () => {
     try {
       const { value } = await Preferences.get({ key: THEME_KEY });
-
-      if (value) {
-        isLight.value = value === 'light';
-      } else {
-        isLight.value = false;
-      }
-
-      await applyTheme();
+      isLight.value = value === 'light';
     } catch (error) {
-      console.error('Error loading theme:', error);
       isLight.value = false;
-      await applyTheme();
     }
+    await applyTheme();
   };
 
   const applyTheme = async () => {
-    document.body.classList.toggle('light', isLight.value);
+    applyThemeToDOM(isLight.value);
 
-    // Set background color on html and body to cover safe areas
-    const bgColor = isLight.value ? '#ffffff' : '#000000';
-    document.documentElement.style.backgroundColor = bgColor;
-    document.body.style.backgroundColor = bgColor;
+    if (!Capacitor.isNativePlatform()) return;
 
     try {
       if (Capacitor.getPlatform() === 'ios') {
-        // iOS with overlaysWebView: true in capacitor.config.json
-        // Style.Dark = dark/black icons  → use on LIGHT/WHITE backgrounds
-        // Style.Light = light/white icons → use on DARK/BLACK backgrounds
+        // With overlaysWebView: true, status bar overlays the app
+        // Style.Dark  = DARK icons/text on status bar → for LIGHT backgrounds
+        // Style.Light = LIGHT icons/text on status bar → for DARK backgrounds
         await StatusBar.setStyle({
           style: isLight.value ? Style.Dark : Style.Light
-        })
+        });
       } else {
-        // Android: can set background color directly
-        if (isLight.value) {
-          await StatusBar.setStyle({ style: Style.Dark })
-          await StatusBar.setBackgroundColor({ color: '#ffffff' })
-        } else {
-          await StatusBar.setStyle({ style: Style.Light })
-          await StatusBar.setBackgroundColor({ color: '#000000' })
-        }
+        // Android
+        await StatusBar.setStyle({
+          style: isLight.value ? Style.Dark : Style.Light
+        });
+        await StatusBar.setBackgroundColor({
+          color: isLight.value ? '#ffffff' : '#000000'
+        });
       }
     } catch (error) {
-      console.log('Status bar not available:', error);
+      console.log('StatusBar error:', error);
     }
   };
 

@@ -470,70 +470,95 @@ body.light {
   --modal-background: #fff;
   --modal-text: #000;
 }
-.header-ios::after,
-.header-md::after {
-  display: none !important;
-}
 
 /* ============================================
-   iOS / ANDROID SAFE AREA FIXES
+   SAFE AREA & BASE
    ============================================ */
 
-html, body {
+html {
   height: 100%;
-  margin: 0;
-  padding: 0;
+  background-color: #000000;
 }
 
 body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
   background-color: #000000;
 }
 
 body.light {
-  background-color: #ffffff !important;
+  background-color: #ffffff;
 }
 
-/* Also fix ion-app */
+body.light html {
+  background-color: #ffffff;
+}
+
 ion-app {
-  background-color: #000000 !important;
+  background-color: var(--background);
 }
 
-body.light ion-app {
-  background-color: #ffffff !important;
+ion-page {
+  background-color: var(--background);
 }
 
 /* ============================================
-   HEADER WHITE LINE FIX
+   HEADER - WHITE LINE NUCLEAR FIX
    ============================================ */
 
-/* Remove white line below status bar */
-ion-header {
-  background-color: #000000 !important;
+/* Kill ALL header pseudo-elements - both iOS and MD mode */
+.header-ios ion-toolbar:last-of-type,
+.header-md ion-toolbar:last-of-type {
+  --border-width: 0 !important;
+}
+
+.header-ios::after,
+.header-md::after {
+  display: none !important;
+  height: 0 !important;
+  background-image: none !important;
+  background: none !important;
 }
 
 ion-header::after {
   display: none !important;
+  height: 0 !important;
   background: none !important;
 }
 
-body.light ion-header {
-  background-color: #ffffff !important;
+/* Header background must match body */
+ion-header,
+ion-header ion-toolbar {
+  --background: #000000;
+  --border-width: 0;
+  --border-color: transparent;
+  --box-shadow: none;
+  background: #000000;
+  box-shadow: none !important;
 }
 
-/* Remove toolbar border/shadow that causes white line */
+body.light ion-header,
+body.light ion-header ion-toolbar {
+  --background: #ffffff;
+  background: #ffffff;
+}
+
+/* First toolbar handles status bar safe area */
+ion-header ion-toolbar:first-child {
+  padding-top: env(safe-area-inset-top);
+  --background: #000000;
+}
+
+body.light ion-header ion-toolbar:first-child {
+  --background: #ffffff;
+}
+
 ion-toolbar {
   --border-width: 0 !important;
   --border-color: transparent !important;
   --box-shadow: none !important;
-}
-
-ion-header ion-toolbar:first-child {
-  padding-top: env(safe-area-inset-top) !important;
-  --background: #000000 !important;
-}
-
-body.light ion-header ion-toolbar:first-child {
-  --background: #ffffff !important;
+  box-shadow: none !important;
 }
 
 /* ============================================
@@ -558,40 +583,12 @@ ion-content {
    GLOBAL STYLES
    ============================================ */
 
-body {
-  background-color: var(--background);
-}
-
-ion-app {
-  background-color: var(--background);
-}
-
 ion-content {
   --background: var(--background);
   --color: var(--text-primary);
 }
 
-ion-page {
-  background-color: var(--background);
-}
-
-/* Header Styles */
-ion-header ion-toolbar {
-  --background: var(--background);
-  --color: var(--text-primary);
-  --border-color: transparent;
-  box-shadow: none;
-}
-
-body.light ion-header ion-toolbar {
-  --background: #ffffff;
-  --color: #0f1419;
-  box-shadow: none;
-}
-
-/* Tab Bar Styles */
-
-
+/* Tab Bar */
 ion-tab-button {
   --color: var(--text-secondary);
   --color-selected: var(--text-primary);
