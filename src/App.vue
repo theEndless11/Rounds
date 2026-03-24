@@ -546,7 +546,6 @@ body.light ion-header ion-toolbar {
 
 /* First toolbar handles status bar safe area */
 ion-header ion-toolbar:first-child {
-  padding-top: env(safe-area-inset-top);
   --background: #000000;
 }
 

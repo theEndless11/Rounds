@@ -47,9 +47,11 @@
 ion-tab-bar {
   --background: #000;
   --border-color: transparent;
+  /* Fixed height for the visible icon+label area only */
   --height: 49px;
   border-top: 1px solid #1a1a1a;
-  padding-bottom: 0;
+  /* Let safe area handle the bottom spacing naturally */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 body.light ion-tab-bar {
@@ -119,10 +121,11 @@ body.light ion-tab-button.tab-selected ion-label {
 
 <style>
 ion-tab-button::part(native) {
+  /* Buttons sit in the fixed 49px zone, safe area padding is below them */
   padding-top: 2px !important;
   padding-bottom: 2px !important;
   min-height: unset !important;
-  height: 100% !important;
+  height: 49px !important;
 }
 
 ion-tabs::part(container) {

@@ -3,25 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" id="theme-color-meta" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="apple-status-meta" />
     <title>Rounds - Medical Social Network</title>
 
     <!-- Apply theme BEFORE Vue loads to prevent status bar flash -->
     <script>
       (function() {
         try {
-          // Capacitor Preferences stores data in localStorage with this key pattern
           const stored = localStorage.getItem('CAPStorage::app-theme');
           const isLight = stored === '"light"';
           const bg = isLight ? '#ffffff' : '#000000';
 
-          // Set background immediately
+          // Set background immediately on both html and body
           document.documentElement.style.backgroundColor = bg;
+          document.documentElement.style.setProperty('background-color', bg, 'important');
 
-          // Update theme-color meta for status bar
+          // Update theme-color meta
           const meta = document.getElementById('theme-color-meta');
           if (meta) meta.content = bg;
+
+          // Update apple status bar meta
+          const appleMeta = document.getElementById('apple-status-meta');
+          if (appleMeta) {
+            appleMeta.content = isLight ? 'black' : 'black-translucent';
+          }
 
           // Pre-apply light class so CSS vars work before Vue mounts
           if (isLight) {
@@ -37,6 +45,9 @@
         margin: 0;
         padding: 0;
         background-color: #000000;
+        /* Extend background into safe area on iOS */
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
       }
       body.light {
         background-color: #ffffff;
