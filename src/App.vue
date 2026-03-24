@@ -546,10 +546,14 @@ body.light ion-header ion-toolbar {
 
 ion-header ion-toolbar:first-child {
   --background: #000000;
+  --padding-top: 0;
+  padding-top: 0;
 }
 
 body.light ion-header ion-toolbar:first-child {
   --background: #ffffff;
+  --padding-top: 0;
+  padding-top: 0;
 }
 
 ion-toolbar {

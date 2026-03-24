@@ -62,7 +62,7 @@ body.light ion-tab-bar {
 
 ion-tab-button ion-icon {
   color: #999;
-  font-size: 22px;
+  font-size: 24px;
   margin-bottom: 1px;
   transition: color 0.2s ease;
   -webkit-tap-highlight-color: transparent;

@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <!-- NO viewport-fit=cover — we are NOT overlaying the status bar anymore -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- viewport-fit=cover is essential for overlaysWebView:true -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" id="theme-color-meta" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!-- Default: dark = light icons on dark bg. Light mode overrides to 'black' = dark icons -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="apple-status-meta" />
+    <!-- black-translucent = transparent overlay, app paints behind it -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Rounds - Medical Social Network</title>
 
     <script>
@@ -23,12 +23,6 @@
 
           const meta = document.getElementById('theme-color-meta');
           if (meta) meta.content = bg;
-
-          const appleMeta = document.getElementById('apple-status-meta');
-          if (appleMeta) {
-            // 'black' = dark icons (for light bg), 'default' = dark icons on white
-            appleMeta.content = isLight ? 'black' : 'black-translucent';
-          }
 
           if (isLight) document.body.classList.add('light');
         } catch(e) {}

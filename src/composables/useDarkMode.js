@@ -10,6 +10,7 @@ const applyThemeToDOM = (light) => {
   const bgColor = light ? '#ffffff' : '#000000';
 
   document.documentElement.style.backgroundColor = bgColor;
+  document.documentElement.style.setProperty('background-color', bgColor, 'important');
   document.body.style.backgroundColor = bgColor;
   document.body.classList.toggle('light', light);
 
@@ -27,24 +28,26 @@ const applyThemeToDOM = (light) => {
     appleMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
     document.head.appendChild(appleMeta);
   }
-  appleMeta.setAttribute('content', light ? 'black' : 'black-translucent');
+  // black-translucent = transparent overlay, icons adapt to bg
+  appleMeta.setAttribute('content', 'black-translucent');
 };
 
 const applyNativeStatusBar = async (light) => {
   if (!Capacitor.isNativePlatform()) return;
 
   try {
-    // Style.Dark = dark icons = use on LIGHT backgrounds
-    // Style.Light = light icons = use on DARK backgrounds
     await StatusBar.setStyle({
+      // Style.Dark  = DARK icons/text → use on LIGHT (white) backgrounds
+      // Style.Light = LIGHT icons/text → use on DARK (black) backgrounds
       style: light ? Style.Dark : Style.Light,
     });
 
-    // setBackgroundColor works on both platforms now that overlaysWebView=false
-    await StatusBar.setBackgroundColor({
-      color: light ? '#ffffff' : '#000000',
-    });
-
+    // Android only — iOS is transparent when overlaysWebView: true
+    if (Capacitor.getPlatform() === 'android') {
+      await StatusBar.setBackgroundColor({
+        color: light ? '#ffffff' : '#000000',
+      });
+    }
   } catch (error) {
     console.log('StatusBar error:', error);
   }
