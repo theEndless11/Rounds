@@ -10,11 +10,10 @@ const applyThemeToDOM = (light) => {
   const bgColor = light ? '#ffffff' : '#000000';
 
   document.documentElement.style.backgroundColor = bgColor;
-  document.documentElement.style.setProperty('background-color', bgColor, 'important');
   document.body.style.backgroundColor = bgColor;
   document.body.classList.toggle('light', light);
 
-  // theme-color tells the browser/OS what color to paint the status bar area
+  // Update theme-color meta (browser chrome on Android)
   let meta = document.querySelector('meta[name="theme-color"]');
   if (!meta) {
     meta = document.createElement('meta');
@@ -22,30 +21,28 @@ const applyThemeToDOM = (light) => {
     document.head.appendChild(meta);
   }
   meta.setAttribute('content', bgColor);
+
+  // Update the status bar background shim div (see App.vue)
+  // This is what actually makes the status bar area visible on iOS
+  const shim = document.getElementById('status-bar-bg');
+  if (shim) {
+    shim.style.backgroundColor = bgColor;
+  }
 };
 
 const applyNativeStatusBar = async (light) => {
   if (!Capacitor.isNativePlatform()) return;
 
   try {
-    const platform = Capacitor.getPlatform();
+    // Style.Dark  = dark icons → use on LIGHT backgrounds
+    // Style.Light = light icons → use on DARK backgrounds
+    await StatusBar.setStyle({
+      style: light ? Style.Dark : Style.Light,
+    });
 
-    if (platform === 'ios') {
-      // overlaysWebView: false means the status bar has its own native background
-      // We just need to set the icon style to match the background color
-      await StatusBar.setStyle({
-        style: light ? Style.Dark : Style.Light,
-      });
-      // On iOS with overlaysWebView:false, the status bar background color
-      // is controlled natively — it matches the app's top background automatically.
-      // We still call setBackgroundColor as a hint for some Capacitor versions.
-      await StatusBar.setBackgroundColor({
-        color: light ? '#ffffff' : '#000000',
-      });
-    } else if (platform === 'android') {
-      await StatusBar.setStyle({
-        style: light ? Style.Dark : Style.Light,
-      });
+    // Android only — on iOS with overlaysWebView:true,
+    // setBackgroundColor is ignored by the OS. The shim div handles it.
+    if (Capacitor.getPlatform() === 'android') {
       await StatusBar.setBackgroundColor({
         color: light ? '#ffffff' : '#000000',
       });

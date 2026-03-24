@@ -544,16 +544,19 @@ body.light ion-header ion-toolbar {
 ion-header ion-toolbar:first-child {
   --background: #000000;
   /*
-    DO NOT zero out --padding-top or padding-top here.
-    Ionic sets padding-top: env(safe-area-inset-top) on this toolbar
-    so app content sits below the native status bar.
-    Overriding it to 0 causes the header background to flood into
-    the status bar zone, making battery/wifi/time icons invisible.
+    With overlaysWebView:true + viewport-fit:cover, the app renders
+    behind the status bar. Ionic does NOT auto-add safe-area padding
+    in this mode. We set it explicitly so header content clears
+    the #status-bar-bg shim div in App.vue.
   */
+  padding-top: env(safe-area-inset-top) !important;
+  --padding-top: env(safe-area-inset-top) !important;
 }
 
 body.light ion-header ion-toolbar:first-child {
   --background: #ffffff;
+  padding-top: env(safe-area-inset-top) !important;
+  --padding-top: env(safe-area-inset-top) !important;
 }
 
 ion-toolbar {
