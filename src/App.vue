@@ -472,7 +472,10 @@ body.light {
 }
 
 /* ============================================
-   SAFE AREA & BASE
+   BASE
+   With overlaysWebView:false, the status bar sits ABOVE the app.
+   No safe-area-inset-top handling needed for the status bar.
+   Ionic's ion-header already handles the toolbar padding correctly.
    ============================================ */
 
 html {
@@ -491,10 +494,6 @@ body.light {
   background-color: #ffffff;
 }
 
-body.light html {
-  background-color: #ffffff;
-}
-
 ion-app {
   background-color: var(--background);
 }
@@ -504,10 +503,9 @@ ion-page {
 }
 
 /* ============================================
-   HEADER - WHITE LINE NUCLEAR FIX
+   HEADER - CLEAN, NO BORDER/LINE
    ============================================ */
 
-/* Kill ALL header pseudo-elements - both iOS and MD mode */
 .header-ios ion-toolbar:last-of-type,
 .header-md ion-toolbar:last-of-type {
   --border-width: 0 !important;
@@ -527,7 +525,6 @@ ion-header::after {
   background: none !important;
 }
 
-/* Header background must match body */
 ion-header,
 ion-header ion-toolbar {
   --background: #000000;
@@ -590,19 +587,16 @@ ion-content {
   --color: var(--text-primary);
 }
 
-/* Tab Bar */
 ion-tab-button {
   --color: var(--text-secondary);
   --color-selected: var(--text-primary);
 }
 
-/* Card Styles */
 ion-card {
   --background: var(--card-background);
   --color: var(--text-primary);
 }
 
-/* List & Item Styles */
 ion-item {
   --background: var(--background-secondary);
   --color: var(--text-primary);
@@ -613,7 +607,6 @@ ion-list {
   --background: var(--background);
 }
 
-/* Input Styles */
 ion-input,
 ion-textarea {
   --background: var(--input-background);
@@ -621,7 +614,6 @@ ion-textarea {
   --placeholder-color: var(--placeholder-color);
 }
 
-/* Button & Text Styles */
 ion-button {
   --color: var(--text-primary);
 }
@@ -629,12 +621,7 @@ ion-button {
 ion-label,
 ion-text,
 p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
 }
 
@@ -642,7 +629,6 @@ ion-spinner {
   color: var(--text-primary);
 }
 
-/* Modal Styles */
 ion-modal {
   --background: var(--background);
 }
@@ -651,7 +637,6 @@ ion-modal ion-content {
   --background: var(--background);
 }
 
-/* Action Sheet Styles - Dark Mode */
 ion-action-sheet {
   --background: #000000 !important;
   --color: #ffffff !important;
@@ -686,7 +671,6 @@ body.light ion-action-sheet::part(header) {
   color: #000000 !important;
 }
 
-/* Alert & Toast Styles */
 ion-alert {
   --background: var(--card-background);
   --color: var(--text-primary);
@@ -698,22 +682,11 @@ ion-toast {
 }
 
 /* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
-::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-}
 /* ============================================
    VERIFICATION BANNER
    ============================================ */

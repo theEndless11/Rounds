@@ -3,12 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <!-- viewport-fit=cover is essential for overlaysWebView:true -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <!--
+      viewport-fit=cover is NOT needed when overlaysWebView:false.
+      Removing it prevents the app from accidentally painting behind the status bar.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#000000" id="theme-color-meta" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!-- black-translucent = transparent overlay, app paints behind it -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!--
+      Use "default" (not "black-translucent") when overlaysWebView:false.
+      "black-translucent" = overlay mode (app paints behind bar).
+      "default"           = bar sits above the app, no overlap.
+    -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Rounds - Medical Social Network</title>
 
     <script>

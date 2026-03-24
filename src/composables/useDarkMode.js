@@ -14,6 +14,7 @@ const applyThemeToDOM = (light) => {
   document.body.style.backgroundColor = bgColor;
   document.body.classList.toggle('light', light);
 
+  // theme-color tells the browser/OS what color to paint the status bar area
   let meta = document.querySelector('meta[name="theme-color"]');
   if (!meta) {
     meta = document.createElement('meta');
@@ -21,29 +22,30 @@ const applyThemeToDOM = (light) => {
     document.head.appendChild(meta);
   }
   meta.setAttribute('content', bgColor);
-
-  let appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-  if (!appleMeta) {
-    appleMeta = document.createElement('meta');
-    appleMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-    document.head.appendChild(appleMeta);
-  }
-  // black-translucent = transparent overlay, icons adapt to bg
-  appleMeta.setAttribute('content', 'black-translucent');
 };
 
 const applyNativeStatusBar = async (light) => {
   if (!Capacitor.isNativePlatform()) return;
 
   try {
-    await StatusBar.setStyle({
-      // Style.Dark  = DARK icons/text → use on LIGHT (white) backgrounds
-      // Style.Light = LIGHT icons/text → use on DARK (black) backgrounds
-      style: light ? Style.Dark : Style.Light,
-    });
+    const platform = Capacitor.getPlatform();
 
-    // Android only — iOS is transparent when overlaysWebView: true
-    if (Capacitor.getPlatform() === 'android') {
+    if (platform === 'ios') {
+      // overlaysWebView: false means the status bar has its own native background
+      // We just need to set the icon style to match the background color
+      await StatusBar.setStyle({
+        style: light ? Style.Dark : Style.Light,
+      });
+      // On iOS with overlaysWebView:false, the status bar background color
+      // is controlled natively — it matches the app's top background automatically.
+      // We still call setBackgroundColor as a hint for some Capacitor versions.
+      await StatusBar.setBackgroundColor({
+        color: light ? '#ffffff' : '#000000',
+      });
+    } else if (platform === 'android') {
+      await StatusBar.setStyle({
+        style: light ? Style.Dark : Style.Light,
+      });
       await StatusBar.setBackgroundColor({
         color: light ? '#ffffff' : '#000000',
       });
