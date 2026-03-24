@@ -6,21 +6,63 @@ import { Capacitor } from '@capacitor/core';
 const THEME_KEY = 'app-theme';
 const isLight = ref(false);
 
-// Apply theme immediately on module load to prevent flash
 const applyThemeToDOM = (light) => {
   const bgColor = light ? '#ffffff' : '#000000';
+
   document.documentElement.style.backgroundColor = bgColor;
+  document.documentElement.style.setProperty('background-color', bgColor, 'important');
   document.body.style.backgroundColor = bgColor;
+  document.body.style.setProperty('background-color', bgColor, 'important');
   document.body.classList.toggle('light', light);
-  
-  // Also set a meta theme-color for the browser chrome
+
   let meta = document.querySelector('meta[name="theme-color"]');
   if (!meta) {
     meta = document.createElement('meta');
-    meta.name = 'theme-color';
+    meta.setAttribute('name', 'theme-color');
     document.head.appendChild(meta);
   }
-  meta.content = bgColor;
+  meta.setAttribute('content', bgColor);
+
+  let appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (!appleMeta) {
+    appleMeta = document.createElement('meta');
+    appleMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+    document.head.appendChild(appleMeta);
+  }
+  appleMeta.setAttribute('content', light ? 'black' : 'black-translucent');
+};
+
+const applyNativeStatusBar = async (light) => {
+  if (!Capacitor.isNativePlatform()) return;
+
+  try {
+    await StatusBar.setStyle({
+      style: light ? Style.Dark : Style.Light,
+    });
+
+    if (Capacitor.getPlatform() === 'android') {
+      await StatusBar.setBackgroundColor({
+        color: light ? '#ffffff' : '#000000',
+      });
+    }
+
+    if (Capacitor.getPlatform() === 'ios') {
+      const bgColor = light ? '#ffffff' : '#000000';
+
+      setTimeout(() => {
+        document.documentElement.style.backgroundColor = bgColor;
+        document.body.style.backgroundColor = bgColor;
+      }, 50);
+
+      setTimeout(() => {
+        document.documentElement.style.backgroundColor = bgColor;
+        document.body.style.backgroundColor = bgColor;
+      }, 150);
+    }
+  } catch (error) {
+    console.log('StatusBar error:', error);
+    applyThemeToDOM(light);
+  }
 };
 
 export const useDarkMode = () => {
@@ -32,41 +74,21 @@ export const useDarkMode = () => {
     } catch (error) {
       isLight.value = false;
     }
-    await applyTheme();
+
+    applyThemeToDOM(isLight.value);
+    await applyNativeStatusBar(isLight.value);
   };
 
   const applyTheme = async () => {
     applyThemeToDOM(isLight.value);
-
-    if (!Capacitor.isNativePlatform()) return;
-
-    try {
-      if (Capacitor.getPlatform() === 'ios') {
-        // With overlaysWebView: true, status bar overlays the app
-        // Style.Dark  = DARK icons/text on status bar → for LIGHT backgrounds
-        // Style.Light = LIGHT icons/text on status bar → for DARK backgrounds
-        await StatusBar.setStyle({
-          style: isLight.value ? Style.Dark : Style.Light
-        });
-      } else {
-        // Android
-        await StatusBar.setStyle({
-          style: isLight.value ? Style.Dark : Style.Light
-        });
-        await StatusBar.setBackgroundColor({
-          color: isLight.value ? '#ffffff' : '#000000'
-        });
-      }
-    } catch (error) {
-      console.log('StatusBar error:', error);
-    }
+    await applyNativeStatusBar(isLight.value);
   };
 
   const toggleTheme = async () => {
     isLight.value = !isLight.value;
     await Preferences.set({
       key: THEME_KEY,
-      value: isLight.value ? 'light' : 'dark'
+      value: isLight.value ? 'light' : 'dark',
     });
     await applyTheme();
   };
@@ -75,7 +97,7 @@ export const useDarkMode = () => {
     isLight.value = theme === 'light';
     await Preferences.set({
       key: THEME_KEY,
-      value: theme
+      value: theme,
     });
     await applyTheme();
   };
@@ -83,20 +105,31 @@ export const useDarkMode = () => {
   const listenToSystemTheme = () => {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     prefersDark.addEventListener('change', async (e) => {
-      const { value } = await Preferences.get({ key: THEME_KEY });
-      if (!value) {
-        isLight.value = !e.matches;
-        await applyTheme();
+      try {
+        const { value } = await Preferences.get({ key: THEME_KEY });
+        if (!value) {
+          isLight.value = !e.matches;
+          await applyTheme();
+        }
+      } catch (error) {
+        console.log('System theme listener error:', error);
       }
     });
+  };
+
+  const reapplyTheme = async () => {
+    applyThemeToDOM(isLight.value);
+    await applyNativeStatusBar(isLight.value);
   };
 
   return {
     isLight,
     isDark: ref(!isLight.value),
     initTheme,
+    applyTheme,
     toggleTheme,
     setTheme,
-    listenToSystemTheme
+    listenToSystemTheme,
+    reapplyTheme,
   };
 };

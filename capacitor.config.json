@@ -9,7 +9,8 @@
     "versionCode": 6
   },
   "ios": {
-    "contentInset": "never"
+    "contentInset": "never",
+    "backgroundColor": "#000000"
   },
   "plugins": {
     "PushNotifications": {
@@ -31,7 +32,8 @@
       "splashImmersive": true
     },
     "StatusBar": {
-      "overlaysWebView": true
+      "overlaysWebView": true,
+      "backgroundColor": "#000000"
     }
   }
 }
