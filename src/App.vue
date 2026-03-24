@@ -544,7 +544,6 @@ body.light ion-header ion-toolbar {
   background: #ffffff;
 }
 
-/* First toolbar handles status bar safe area */
 ion-header ion-toolbar:first-child {
   --background: #000000;
 }

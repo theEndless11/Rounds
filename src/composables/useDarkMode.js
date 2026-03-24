@@ -10,9 +10,7 @@ const applyThemeToDOM = (light) => {
   const bgColor = light ? '#ffffff' : '#000000';
 
   document.documentElement.style.backgroundColor = bgColor;
-  document.documentElement.style.setProperty('background-color', bgColor, 'important');
   document.body.style.backgroundColor = bgColor;
-  document.body.style.setProperty('background-color', bgColor, 'important');
   document.body.classList.toggle('light', light);
 
   let meta = document.querySelector('meta[name="theme-color"]');
@@ -36,32 +34,19 @@ const applyNativeStatusBar = async (light) => {
   if (!Capacitor.isNativePlatform()) return;
 
   try {
+    // Style.Dark = dark icons = use on LIGHT backgrounds
+    // Style.Light = light icons = use on DARK backgrounds
     await StatusBar.setStyle({
       style: light ? Style.Dark : Style.Light,
     });
 
-    if (Capacitor.getPlatform() === 'android') {
-      await StatusBar.setBackgroundColor({
-        color: light ? '#ffffff' : '#000000',
-      });
-    }
+    // setBackgroundColor works on both platforms now that overlaysWebView=false
+    await StatusBar.setBackgroundColor({
+      color: light ? '#ffffff' : '#000000',
+    });
 
-    if (Capacitor.getPlatform() === 'ios') {
-      const bgColor = light ? '#ffffff' : '#000000';
-
-      setTimeout(() => {
-        document.documentElement.style.backgroundColor = bgColor;
-        document.body.style.backgroundColor = bgColor;
-      }, 50);
-
-      setTimeout(() => {
-        document.documentElement.style.backgroundColor = bgColor;
-        document.body.style.backgroundColor = bgColor;
-      }, 150);
-    }
   } catch (error) {
     console.log('StatusBar error:', error);
-    applyThemeToDOM(light);
   }
 };
 
@@ -74,7 +59,6 @@ export const useDarkMode = () => {
     } catch (error) {
       isLight.value = false;
     }
-
     applyThemeToDOM(isLight.value);
     await applyNativeStatusBar(isLight.value);
   };

@@ -3,13 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <!-- NO viewport-fit=cover — we are NOT overlaying the status bar anymore -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#000000" id="theme-color-meta" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- Default: dark = light icons on dark bg. Light mode overrides to 'black' = dark icons -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="apple-status-meta" />
     <title>Rounds - Medical Social Network</title>
 
-    <!-- Apply theme BEFORE Vue loads to prevent status bar flash -->
     <script>
       (function() {
         try {
@@ -17,37 +18,29 @@
           const isLight = stored === '"light"';
           const bg = isLight ? '#ffffff' : '#000000';
 
-          // Set background immediately on both html and body
           document.documentElement.style.backgroundColor = bg;
           document.documentElement.style.setProperty('background-color', bg, 'important');
 
-          // Update theme-color meta
           const meta = document.getElementById('theme-color-meta');
           if (meta) meta.content = bg;
 
-          // Update apple status bar meta
           const appleMeta = document.getElementById('apple-status-meta');
           if (appleMeta) {
+            // 'black' = dark icons (for light bg), 'default' = dark icons on white
             appleMeta.content = isLight ? 'black' : 'black-translucent';
           }
 
-          // Pre-apply light class so CSS vars work before Vue mounts
-          if (isLight) {
-            document.body.classList.add('light');
-          }
+          if (isLight) document.body.classList.add('light');
         } catch(e) {}
       })();
     </script>
 
     <style>
-      /* Inline critical styles to prevent flash */
       html, body {
         margin: 0;
         padding: 0;
         background-color: #000000;
-        /* Extend background into safe area on iOS */
         min-height: 100vh;
-        min-height: -webkit-fill-available;
       }
       body.light {
         background-color: #ffffff;
