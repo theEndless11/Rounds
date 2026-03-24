@@ -543,14 +543,17 @@ body.light ion-header ion-toolbar {
 
 ion-header ion-toolbar:first-child {
   --background: #000000;
-  --padding-top: 0;
-  padding-top: 0;
+  /*
+    DO NOT zero out --padding-top or padding-top here.
+    Ionic sets padding-top: env(safe-area-inset-top) on this toolbar
+    so app content sits below the native status bar.
+    Overriding it to 0 causes the header background to flood into
+    the status bar zone, making battery/wifi/time icons invisible.
+  */
 }
 
 body.light ion-header ion-toolbar:first-child {
   --background: #ffffff;
-  --padding-top: 0;
-  padding-top: 0;
 }
 
 ion-toolbar {
@@ -686,7 +689,6 @@ ion-toast {
 ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
-
 /* ============================================
    VERIFICATION BANNER
    ============================================ */
