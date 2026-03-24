@@ -9,7 +9,7 @@
     "versionCode": 6
   },
   "ios": {
-    "contentInset": "always"
+    "contentInset": "never"
   },
   "plugins": {
     "PushNotifications": {

@@ -36,18 +36,20 @@ export const useDarkMode = () => {
 
     try {
       if (Capacitor.getPlatform() === 'ios') {
-        // iOS: only set style (text color), background follows app
-        await StatusBar.setStyle({ style: isLight.value ? Style.Light : Style.Dark });
-        // On iOS setOverlaysWebView false makes status bar have its own background
-        await StatusBar.setOverlaysWebView({ overlay: false });
+        // iOS with overlaysWebView: true in capacitor.config.json
+        // Style.Dark = dark/black icons  → use on LIGHT/WHITE backgrounds
+        // Style.Light = light/white icons → use on DARK/BLACK backgrounds
+        await StatusBar.setStyle({
+          style: isLight.value ? Style.Dark : Style.Light
+        })
       } else {
         // Android: can set background color directly
         if (isLight.value) {
-          await StatusBar.setStyle({ style: Style.Light });
-          await StatusBar.setBackgroundColor({ color: '#ffffff' });
+          await StatusBar.setStyle({ style: Style.Dark })
+          await StatusBar.setBackgroundColor({ color: '#ffffff' })
         } else {
-          await StatusBar.setStyle({ style: Style.Dark });
-          await StatusBar.setBackgroundColor({ color: '#000000' });
+          await StatusBar.setStyle({ style: Style.Light })
+          await StatusBar.setBackgroundColor({ color: '#000000' })
         }
       }
     } catch (error) {

@@ -470,6 +470,10 @@ body.light {
   --modal-background: #fff;
   --modal-text: #000;
 }
+.header-ios::after,
+.header-md::after {
+  display: none !important;
+}
 
 /* ============================================
    iOS / ANDROID SAFE AREA FIXES
