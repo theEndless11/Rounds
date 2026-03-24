@@ -476,24 +476,22 @@ body.light {
    ============================================ */
 
 html, body {
-  background-color: #000000 !important;
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+body {
+  background-color: #000000;
 }
 
 body.light {
   background-color: #ffffff !important;
 }
 
-/* Extend ion-app to fill entire screen including safe areas */
+/* Also fix ion-app */
 ion-app {
   background-color: #000000 !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
 }
 
 body.light ion-app {

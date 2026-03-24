@@ -44,12 +44,11 @@
 </template>
 
 <style scoped>
-
 ion-tab-bar {
   --background: #000;
   --border-color: transparent;
+  --height: 49px;
   border-top: 1px solid #1a1a1a;
-  height: 49px;  /* iOS standard tab bar height */
   padding-bottom: 0;
 }
 
@@ -119,7 +118,6 @@ body.light ion-tab-button.tab-selected ion-label {
 </style>
 
 <style>
-/* Kill default ion-tab-button padding */
 ion-tab-button::part(native) {
   padding-top: 2px !important;
   padding-bottom: 2px !important;
@@ -127,14 +125,8 @@ ion-tab-button::part(native) {
   height: 100% !important;
 }
 
-/* Remove white line above tab bar from ion-tabs */
 ion-tabs::part(container) {
   border-top: none !important;
-}
-
-.tab-bar-animated {
-  height: calc(49px + env(safe-area-inset-bottom)) !important;
-  padding-bottom: env(safe-area-inset-bottom) !important;
 }
 </style>
 

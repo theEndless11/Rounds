@@ -31,7 +31,6 @@
       "splashImmersive": true
     },
     "StatusBar": {
-  "style": "DARK",
   "overlaysWebView": true
 }
   }
