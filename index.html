@@ -4,8 +4,44 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#3880ff" />
+    <meta name="theme-color" content="#000000" id="theme-color-meta" />
     <title>Rounds - Medical Social Network</title>
+
+    <!-- Apply theme BEFORE Vue loads to prevent status bar flash -->
+    <script>
+      (function() {
+        try {
+          // Capacitor Preferences stores data in localStorage with this key pattern
+          const stored = localStorage.getItem('CAPStorage::app-theme');
+          const isLight = stored === '"light"';
+          const bg = isLight ? '#ffffff' : '#000000';
+
+          // Set background immediately
+          document.documentElement.style.backgroundColor = bg;
+
+          // Update theme-color meta for status bar
+          const meta = document.getElementById('theme-color-meta');
+          if (meta) meta.content = bg;
+
+          // Pre-apply light class so CSS vars work before Vue mounts
+          if (isLight) {
+            document.body.classList.add('light');
+          }
+        } catch(e) {}
+      })();
+    </script>
+
+    <style>
+      /* Inline critical styles to prevent flash */
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #000000;
+      }
+      body.light {
+        background-color: #ffffff;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
