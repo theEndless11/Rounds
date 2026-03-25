@@ -8,16 +8,10 @@ const isLight = ref(false);
 
 const initSafeAreaVar = async () => {
   if (!Capacitor.isNativePlatform()) return;
-  try {
-    const info = await StatusBar.getInfo();
-    if (info && info.height && info.height > 0) {
-      document.documentElement.style.setProperty('--sat', `${info.height}px`);
-    } else {
-      document.documentElement.style.setProperty('--sat', '44px');
-    }
-  } catch (e) {
-    document.documentElement.style.setProperty('--sat', '44px');
-  }
+  // With overlaysWebView:false, iOS manages the status bar area natively.
+  // Ionic's ion-header already accounts for it automatically.
+  // Set --sat to 0px so any legacy manual padding in CSS doesn't double-pad.
+  document.documentElement.style.setProperty('--sat', '0px');
 };
 
 const applyThemeToDOM = (light) => {
@@ -34,6 +28,7 @@ const applyThemeToDOM = (light) => {
   }
   meta.setAttribute('content', bgColor);
 
+  // Legacy shim support — safe to keep even if shim element doesn't exist
   const shim = document.getElementById('status-bar-bg');
   if (shim) shim.style.backgroundColor = bgColor;
 };
@@ -41,23 +36,21 @@ const applyThemeToDOM = (light) => {
 const applyNativeStatusBar = async (light) => {
   if (!Capacitor.isNativePlatform()) return;
   try {
-    // ALWAYS show first — splashImmersive can leave it hidden
+    // Always ensure the status bar is visible first
     await StatusBar.show();
 
-    // Small delay to ensure show() completes before setting style
-    await new Promise(resolve => setTimeout(resolve, 50));
-
-    // Style.Light = white icons  → for DARK backgrounds
-    // Style.Dark  = black icons  → for LIGHT backgrounds
+    // Style.Light = white icons  → use on DARK backgrounds
+    // Style.Dark  = black icons  → use on LIGHT backgrounds
     await StatusBar.setStyle({
       style: light ? Style.Dark : Style.Light,
     });
 
+    // Android only: set a background color for the status bar
+    // Do NOT call setOverlaysWebView here — it is controlled via capacitor.config.json only
     if (Capacitor.getPlatform() === 'android') {
       await StatusBar.setBackgroundColor({
         color: light ? '#ffffff' : '#000000',
       });
-      await StatusBar.setOverlaysWebView({ overlay: true });
     }
   } catch (error) {
     console.log('StatusBar error:', error);
@@ -65,19 +58,18 @@ const applyNativeStatusBar = async (light) => {
 };
 
 export const useDarkMode = () => {
-
   const initTheme = async () => {
-    // Step 1: show status bar immediately (before anything else)
+    // Step 1: ensure status bar is visible immediately
     if (Capacitor.isNativePlatform()) {
       try {
         await StatusBar.show();
       } catch(e) {}
     }
 
-    // Step 2: get real safe area height and set --sat
+    // Step 2: set --sat CSS variable (0px with overlaysWebView:false)
     await initSafeAreaVar();
 
-    // Step 3: load saved theme
+    // Step 3: load saved theme preference
     try {
       const { value } = await Preferences.get({ key: THEME_KEY });
       isLight.value = value === 'light';
@@ -85,7 +77,7 @@ export const useDarkMode = () => {
       isLight.value = false;
     }
 
-    // Step 4: apply theme + status bar icon style
+    // Step 4: apply theme to DOM and native status bar
     applyThemeToDOM(isLight.value);
     await applyNativeStatusBar(isLight.value);
   };

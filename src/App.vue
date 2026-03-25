@@ -495,9 +495,9 @@ body.light {
 
 /* ============================================
    BASE
-   With overlaysWebView:false, the status bar sits ABOVE the app.
-   No safe-area-inset-top handling needed for the status bar.
-   Ionic's ion-header already handles the toolbar padding correctly.
+   overlaysWebView:false — the status bar sits ABOVE the app with its own
+   native background. iOS handles the safe area automatically.
+   No manual status bar padding is needed anywhere in this file.
    ============================================ */
 
 html {
@@ -566,18 +566,18 @@ body.light ion-header ion-toolbar {
 ion-header ion-toolbar:first-child {
   --background: #000000;
   /*
-    Use --sat (set by StatusBar.getInfo() in useDarkMode) with
-    env(safe-area-inset-top) as fallback, and 44px as final fallback.
-    This ensures the toolbar content always clears the status bar shim.
+    With overlaysWebView:false, Ionic handles the safe area natively via
+    ion-header. No manual padding-top is needed here — removing it prevents
+    double-spacing that would appear as a gap above the toolbar content.
   */
-  padding-top: var(--sat, env(safe-area-inset-top, 44px)) !important;
-  --padding-top: var(--sat, env(safe-area-inset-top, 44px)) !important;
+  padding-top: 0 !important;
+  --padding-top: 0 !important;
 }
 
 body.light ion-header ion-toolbar:first-child {
   --background: #ffffff;
-  padding-top: var(--sat, env(safe-area-inset-top, 44px)) !important;
-  --padding-top: var(--sat, env(safe-area-inset-top, 44px)) !important;
+  padding-top: 0 !important;
+  --padding-top: 0 !important;
 }
 
 ion-toolbar {
