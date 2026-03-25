@@ -20,14 +20,14 @@ import '@ionic/vue/css/display.css'
 import { App as CapApp } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
-import { StatusBar } from '@capacitor/status-bar'
+import { StatusBar, Style } from '@capacitor/status-bar'
 
-// Ensure status bar is visible at boot.
-// Do NOT call setStyle here — useDarkMode handles icon style after the theme
-// is loaded. Calling setStyle here before the theme is known causes a race
-// condition (light/dark icons set wrong, then flipped 50ms later).
+// Show status bar AND set correct icon style immediately at boot —
+// before Vue mounts, before router, before auth.
+// This closes the gap where the status bar is visible but icons are wrong color.
 if (Capacitor.isNativePlatform()) {
   StatusBar.show().catch(() => {})
+  StatusBar.setStyle({ style: Style.Light }).catch(() => {}) // white icons for dark bg
 }
 
 const app = createApp(App)
@@ -39,40 +39,28 @@ app.use(router)
 // Handle deep links for OAuth callback (mobile only)
 if (Capacitor.isNativePlatform()) {
   CapApp.addListener('appUrlOpen', async (event) => {
-    // Close the in-app browser if open (after Google OAuth redirect)
     try {
       await Browser.close()
-    } catch (_) {
-      // Browser might not be open, ignore
-    }
+    } catch (_) {}
     try {
       const url = new URL(event.url)
-      // Handle auth callback: com.rounds.social://auth/callback
       if (url.host === 'auth' && url.pathname === '/callback') {
         const hashParams = new URLSearchParams(url.hash.substring(1))
         const accessToken = hashParams.get('access_token')
         const refreshToken = hashParams.get('refresh_token')
         if (accessToken && refreshToken) {
-          // Implicit flow — set session directly
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           })
-          if (error || !data.session) {
-            router.push('/login')
-            return
-          }
+          if (error || !data.session) { router.push('/login'); return }
           router.push('/auth/callback')
         } else {
-          // PKCE flow — check for code in query params
           const queryParams = new URLSearchParams(url.search)
           const code = queryParams.get('code')
           if (code) {
             const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-            if (error || !data.session) {
-              router.push('/login')
-              return
-            }
+            if (error || !data.session) { router.push('/login'); return }
             router.push('/auth/callback')
           } else {
             router.push('/login')
@@ -80,7 +68,6 @@ if (Capacitor.isNativePlatform()) {
         }
         return
       }
-      // Handle password reset: com.rounds.social://reset-password
       if (url.host === 'reset-password') {
         const hashParams = new URLSearchParams(url.hash.substring(1))
         const accessToken = hashParams.get('access_token')

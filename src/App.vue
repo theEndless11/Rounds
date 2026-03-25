@@ -495,10 +495,8 @@ body.light {
 
 /* ============================================
    BASE
-   overlaysWebView:true — the status bar floats OVER the app edge-to-edge.
-   Ionic does NOT auto-pad for the status bar in this mode.
-   We use --sat (set by StatusBar.getInfo() in useDarkMode) to push the
-   first toolbar's content below the status bar ourselves.
+   overlaysWebView:true — status bar floats over the app edge-to-edge.
+   We use --sat (set by StatusBar.getInfo()) to pad the first toolbar.
    ============================================ */
 
 html {
@@ -517,12 +515,15 @@ body.light {
   background-color: #ffffff;
 }
 
+/* Use CSS variables only — never set raw background: on Ionic components.
+   Raw background properties bypass Ionic's shadow DOM and bleed into the
+   status bar area, painting over the icons. */
 ion-app {
-  background-color: var(--background);
+  --background: var(--background);
 }
 
 ion-page {
-  background-color: var(--background);
+  --background: var(--background);
 }
 
 /* ============================================
@@ -550,36 +551,22 @@ ion-header::after {
 
 ion-header,
 ion-header ion-toolbar {
-  --background: #000000;
+  --background: var(--background);
   --border-width: 0;
   --border-color: transparent;
   --box-shadow: none;
-  background: #000000;
-  box-shadow: none !important;
-}
-
-body.light ion-header,
-body.light ion-header ion-toolbar {
-  --background: #ffffff;
-  background: #ffffff;
+  /* NO raw background: property here — only CSS variables.
+     Raw background on ion-header bleeds up behind the status bar icons. */
 }
 
 ion-header ion-toolbar:first-child {
-  --background: #000000;
+  --background: var(--background);
   /*
-    overlaysWebView:true: the status bar floats over the app with no background.
-    --sat is set by StatusBar.getInfo() in useDarkMode.js (real pixel height).
-    env(safe-area-inset-top) is the CSS fallback if --sat isn't set yet.
-    54px is the final hard fallback for Dynamic Island devices.
-    This padding pushes the toolbar content (logo, avatar, icons) below
-    the status bar so they don't overlap.
+    --sat is set at runtime by StatusBar.getInfo() in useDarkMode.js.
+    env(safe-area-inset-top) is the CSS fallback before --sat is set.
+    54px is the hard fallback for Dynamic Island devices.
+    This pads the toolbar content below the floating status bar.
   */
-  padding-top: var(--sat, env(safe-area-inset-top, 54px)) !important;
-  --padding-top: var(--sat, env(safe-area-inset-top, 54px)) !important;
-}
-
-body.light ion-header ion-toolbar:first-child {
-  --background: #ffffff;
   padding-top: var(--sat, env(safe-area-inset-top, 54px)) !important;
   --padding-top: var(--sat, env(safe-area-inset-top, 54px)) !important;
 }
