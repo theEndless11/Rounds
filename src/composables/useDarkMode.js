@@ -28,6 +28,17 @@ const applyThemeToDOM = (light) => {
   }
   meta.setAttribute('content', bgColor);
 
+  // Dynamically switch status bar icon color for light/dark mode.
+  // "black"   = black bg, WHITE icons → correct for dark app
+  // "default" = white bg, BLACK icons → correct for light app
+  let sbMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (!sbMeta) {
+    sbMeta = document.createElement('meta');
+    sbMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+    document.head.appendChild(sbMeta);
+  }
+  sbMeta.setAttribute('content', light ? 'default' : 'black');
+
   // Legacy shim support — safe to keep even if shim element doesn't exist
   const shim = document.getElementById('status-bar-bg');
   if (shim) shim.style.backgroundColor = bgColor;

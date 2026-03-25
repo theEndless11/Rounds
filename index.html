@@ -11,11 +11,13 @@
     <meta name="theme-color" content="#000000" id="theme-color-meta" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <!--
-      "default" (not "black-translucent") because overlaysWebView:false.
-      black-translucent is only for edge-to-edge overlay mode and causes
-      the status bar to be invisible when the app background matches it.
+      "black" = black status bar background with WHITE icons.
+      This is correct for dark-background apps with overlaysWebView:false.
+      - "default"           → white status bar, BLACK icons → invisible on dark apps ✗
+      - "black"             → black status bar, WHITE icons → correct for dark apps ✓
+      - "black-translucent" → transparent, edge-to-edge    → only for overlaysWebView:true ✗
     -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <title>Rounds - Medical Social Network</title>
     <script>
       (function() {
@@ -27,6 +29,9 @@
           document.documentElement.style.setProperty('background-color', bg, 'important');
           const meta = document.getElementById('theme-color-meta');
           if (meta) meta.content = bg;
+          // Also update status bar style meta for correct icon color on light pre-load
+          const sbMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+          if (sbMeta) sbMeta.content = isLight ? 'default' : 'black';
           if (isLight) document.documentElement.classList.add('light-pre');
         } catch(e) {}
       })();
