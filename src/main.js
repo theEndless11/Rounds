@@ -22,6 +22,16 @@ import '@ionic/vue/css/display.css'
 import { App as CapApp } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
+import { StatusBar, Style } from '@capacitor/status-bar'
+
+// Show status bar immediately at boot — before Vue mounts.
+// splashImmersive:true leaves the status bar hidden after splash dismisses
+// and Capacitor does not restore it automatically. Calling show() here
+// guarantees it is visible before any component renders.
+if (Capacitor.isNativePlatform()) {
+  StatusBar.show().catch(() => {})
+  StatusBar.setStyle({ style: Style.Light }).catch(() => {}) // white icons (dark bg default)
+}
 
 const app = createApp(App)
 const pinia = createPinia()

@@ -6,44 +6,26 @@ import { Capacitor } from '@capacitor/core';
 const THEME_KEY = 'app-theme';
 const isLight = ref(false);
 
-/**
- * Sets --sat CSS variable to the real status bar height.
- * env(safe-area-inset-top) is unreliable on early Capacitor paint cycles.
- * We read it from StatusBar.getInfo() which gives the actual native px value.
- */
 const initSafeAreaVar = async () => {
   if (!Capacitor.isNativePlatform()) return;
   try {
     const info = await StatusBar.getInfo();
-    // info.height is pixels — convert to the right unit for CSS
-    // On iOS this is typically 44px (standard) or 59px (Dynamic Island / notch)
-    if (info && info.height) {
+    if (info && info.height && info.height > 0) {
       document.documentElement.style.setProperty('--sat', `${info.height}px`);
     } else {
-      // Fallback: read from the environment after a tick
-      requestAnimationFrame(() => {
-        const computed = getComputedStyle(document.documentElement)
-          .getPropertyValue('--sat');
-        if (!computed || computed.trim() === '0px' || computed.trim() === '') {
-          // Hard fallback for iPhone with notch/island
-          document.documentElement.style.setProperty('--sat', '44px');
-        }
-      });
+      document.documentElement.style.setProperty('--sat', '44px');
     }
   } catch (e) {
-    // If StatusBar.getInfo() not available, use safe fallback
     document.documentElement.style.setProperty('--sat', '44px');
   }
 };
 
 const applyThemeToDOM = (light) => {
   const bgColor = light ? '#ffffff' : '#000000';
-
   document.documentElement.style.backgroundColor = bgColor;
   document.body.style.backgroundColor = bgColor;
   document.body.classList.toggle('light', light);
 
-  // theme-color meta for Android browser chrome
   let meta = document.querySelector('meta[name="theme-color"]');
   if (!meta) {
     meta = document.createElement('meta');
@@ -52,7 +34,6 @@ const applyThemeToDOM = (light) => {
   }
   meta.setAttribute('content', bgColor);
 
-  // Update the status bar shim background
   const shim = document.getElementById('status-bar-bg');
   if (shim) shim.style.backgroundColor = bgColor;
 };
@@ -60,11 +41,14 @@ const applyThemeToDOM = (light) => {
 const applyNativeStatusBar = async (light) => {
   if (!Capacitor.isNativePlatform()) return;
   try {
+    // ALWAYS show first — splashImmersive can leave it hidden
     await StatusBar.show();
 
-    // CRITICAL:
-    // Style.Light = LIGHT (white) icons  → needed on DARK (black) background
-    // Style.Dark  = DARK  (black) icons  → needed on LIGHT (white) background
+    // Small delay to ensure show() completes before setting style
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Style.Light = white icons  → for DARK backgrounds
+    // Style.Dark  = black icons  → for LIGHT backgrounds
     await StatusBar.setStyle({
       style: light ? Style.Dark : Style.Light,
     });
@@ -73,12 +57,8 @@ const applyNativeStatusBar = async (light) => {
       await StatusBar.setBackgroundColor({
         color: light ? '#ffffff' : '#000000',
       });
-      // On Android, also set overlaysWebView explicitly
       await StatusBar.setOverlaysWebView({ overlay: true });
     }
-
-    // iOS: setBackgroundColor does nothing with overlaysWebView:true
-    // The shim div handles the visual background
   } catch (error) {
     console.log('StatusBar error:', error);
   }
@@ -87,9 +67,17 @@ const applyNativeStatusBar = async (light) => {
 export const useDarkMode = () => {
 
   const initTheme = async () => {
-    // First: initialize the --sat CSS variable so shim has correct height
+    // Step 1: show status bar immediately (before anything else)
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await StatusBar.show();
+      } catch(e) {}
+    }
+
+    // Step 2: get real safe area height and set --sat
     await initSafeAreaVar();
 
+    // Step 3: load saved theme
     try {
       const { value } = await Preferences.get({ key: THEME_KEY });
       isLight.value = value === 'light';
@@ -97,6 +85,7 @@ export const useDarkMode = () => {
       isLight.value = false;
     }
 
+    // Step 4: apply theme + status bar icon style
     applyThemeToDOM(isLight.value);
     await applyNativeStatusBar(isLight.value);
   };

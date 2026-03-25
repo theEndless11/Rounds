@@ -28,8 +28,8 @@
       "launchShowDuration": 2000,
       "launchAutoHide": true,
       "backgroundColor": "#000000",
-      "splashFullScreen": true,
-      "splashImmersive": true
+      "splashFullScreen": false,
+      "splashImmersive": false
     },
     "StatusBar": {
       "overlaysWebView": true,
