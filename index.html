@@ -4,20 +4,19 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <!--
-      viewport-fit=cover is NOT used here because overlaysWebView:false.
-      The status bar is managed natively by iOS — no edge-to-edge overlay needed.
+      viewport-fit=cover: required for overlaysWebView:true so the app fills
+      edge-to-edge behind the status bar on iPhone notch / Dynamic Island.
     -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" id="theme-color-meta" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <!--
-      "black" = black status bar background with WHITE icons.
-      This is correct for dark-background apps with overlaysWebView:false.
-      - "default"           → white status bar, BLACK icons → invisible on dark apps ✗
-      - "black"             → black status bar, WHITE icons → correct for dark apps ✓
-      - "black-translucent" → transparent, edge-to-edge    → only for overlaysWebView:true ✗
+      black-translucent: app renders edge-to-edge behind the status bar.
+      Status bar icons float over the app content with NO background of their own.
+      Icon COLOR is controlled via StatusBar.setStyle() — Style.Light = white icons.
+      White icons on our black background = always visible. ✓
     -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Rounds - Medical Social Network</title>
     <script>
       (function() {
@@ -29,9 +28,8 @@
           document.documentElement.style.setProperty('background-color', bg, 'important');
           const meta = document.getElementById('theme-color-meta');
           if (meta) meta.content = bg;
-          // Also update status bar style meta for correct icon color on light pre-load
-          const sbMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-          if (sbMeta) sbMeta.content = isLight ? 'default' : 'black';
+          // Note: apple-mobile-web-app-status-bar-style stays "black-translucent" always.
+          // Icon color (white/black) is handled by StatusBar.setStyle() at runtime.
           if (isLight) document.documentElement.classList.add('light-pre');
         } catch(e) {}
       })();

@@ -8,10 +8,20 @@ const isLight = ref(false);
 
 const initSafeAreaVar = async () => {
   if (!Capacitor.isNativePlatform()) return;
-  // With overlaysWebView:false, iOS manages the status bar area natively.
-  // Ionic's ion-header already accounts for it automatically.
-  // Set --sat to 0px so any legacy manual padding in CSS doesn't double-pad.
-  document.documentElement.style.setProperty('--sat', '0px');
+  // overlaysWebView:true — the status bar floats over our content.
+  // We read the real pixel height from StatusBar.getInfo() and expose it
+  // as --sat so ion-header can pad its first toolbar to clear the status bar.
+  try {
+    const info = await StatusBar.getInfo();
+    if (info && info.height && info.height > 0) {
+      document.documentElement.style.setProperty('--sat', `${info.height}px`);
+    } else {
+      // Dynamic Island iPhones: height can return 0 on first call — use env() fallback
+      document.documentElement.style.setProperty('--sat', 'env(safe-area-inset-top, 54px)');
+    }
+  } catch (e) {
+    document.documentElement.style.setProperty('--sat', 'env(safe-area-inset-top, 54px)');
+  }
 };
 
 const applyThemeToDOM = (light) => {
@@ -28,18 +38,10 @@ const applyThemeToDOM = (light) => {
   }
   meta.setAttribute('content', bgColor);
 
-  // Dynamically switch status bar icon color for light/dark mode.
-  // "black"   = black bg, WHITE icons → correct for dark app
-  // "default" = white bg, BLACK icons → correct for light app
-  let sbMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-  if (!sbMeta) {
-    sbMeta = document.createElement('meta');
-    sbMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-    document.head.appendChild(sbMeta);
-  }
-  sbMeta.setAttribute('content', light ? 'default' : 'black');
+  // apple-mobile-web-app-status-bar-style stays "black-translucent" always.
+  // Icon color (white vs black) is driven purely by StatusBar.setStyle() below.
+  // Do NOT touch that meta tag at runtime — it has no effect after page load anyway.
 
-  // Legacy shim support — safe to keep even if shim element doesn't exist
   const shim = document.getElementById('status-bar-bg');
   if (shim) shim.style.backgroundColor = bgColor;
 };
@@ -47,21 +49,20 @@ const applyThemeToDOM = (light) => {
 const applyNativeStatusBar = async (light) => {
   if (!Capacitor.isNativePlatform()) return;
   try {
-    // Always ensure the status bar is visible first
+    // Always show first — splash can leave it hidden
     await StatusBar.show();
 
-    // Style.Light = white icons  → use on DARK backgrounds
-    // Style.Dark  = black icons  → use on LIGHT backgrounds
+    // Style.Light = WHITE icons → correct for DARK backgrounds
+    // Style.Dark  = BLACK icons → correct for LIGHT backgrounds
     await StatusBar.setStyle({
       style: light ? Style.Dark : Style.Light,
     });
 
-    // Android only: set a background color for the status bar
-    // Do NOT call setOverlaysWebView here — it is controlled via capacitor.config.json only
     if (Capacitor.getPlatform() === 'android') {
       await StatusBar.setBackgroundColor({
         color: light ? '#ffffff' : '#000000',
       });
+      await StatusBar.setOverlaysWebView({ overlay: true });
     }
   } catch (error) {
     console.log('StatusBar error:', error);
@@ -70,17 +71,15 @@ const applyNativeStatusBar = async (light) => {
 
 export const useDarkMode = () => {
   const initTheme = async () => {
-    // Step 1: ensure status bar is visible immediately
+    // Step 1: show status bar immediately (splash can leave it hidden)
     if (Capacitor.isNativePlatform()) {
-      try {
-        await StatusBar.show();
-      } catch(e) {}
+      try { await StatusBar.show(); } catch(e) {}
     }
 
-    // Step 2: set --sat CSS variable (0px with overlaysWebView:false)
+    // Step 2: measure real status bar height → set --sat CSS var
     await initSafeAreaVar();
 
-    // Step 3: load saved theme preference
+    // Step 3: load saved theme
     try {
       const { value } = await Preferences.get({ key: THEME_KEY });
       isLight.value = value === 'light';
@@ -88,7 +87,7 @@ export const useDarkMode = () => {
       isLight.value = false;
     }
 
-    // Step 4: apply theme to DOM and native status bar
+    // Step 4: apply theme to DOM + native status bar icon color
     applyThemeToDOM(isLight.value);
     await applyNativeStatusBar(isLight.value);
   };
