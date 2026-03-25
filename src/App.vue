@@ -1,5 +1,26 @@
 <template>
   <ion-app>
+
+    <!-- STATUS BAR SHIM: fills the native status bar zone with the correct
+         theme color. On iOS with overlaysWebView:true the status bar is
+         transparent — this div sits behind the icons and gives them a
+         readable background. Height is driven by --sat (set via
+         StatusBar.getInfo() in useDarkMode) with env() and px fallbacks. -->
+    <div
+      id="status-bar-bg"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--sat, env(safe-area-inset-top, 44px));
+        z-index: 99999;
+        pointer-events: none;
+        background-color: #000000;
+        transition: background-color 0.2s;
+      "
+    ></div>
+
     <!-- Loading State -->
     <div 
       v-if="authLoading" 
@@ -41,6 +62,7 @@
     </template>
   </ion-app>
 </template>
+
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
@@ -544,19 +566,18 @@ body.light ion-header ion-toolbar {
 ion-header ion-toolbar:first-child {
   --background: #000000;
   /*
-    With overlaysWebView:true + viewport-fit:cover, the app renders
-    behind the status bar. Ionic does NOT auto-add safe-area padding
-    in this mode. We set it explicitly so header content clears
-    the #status-bar-bg shim div in App.vue.
+    Use --sat (set by StatusBar.getInfo() in useDarkMode) with
+    env(safe-area-inset-top) as fallback, and 44px as final fallback.
+    This ensures the toolbar content always clears the status bar shim.
   */
-  padding-top: env(safe-area-inset-top) !important;
-  --padding-top: env(safe-area-inset-top) !important;
+  padding-top: var(--sat, env(safe-area-inset-top, 44px)) !important;
+  --padding-top: var(--sat, env(safe-area-inset-top, 44px)) !important;
 }
 
 body.light ion-header ion-toolbar:first-child {
   --background: #ffffff;
-  padding-top: env(safe-area-inset-top) !important;
-  --padding-top: env(safe-area-inset-top) !important;
+  padding-top: var(--sat, env(safe-area-inset-top, 44px)) !important;
+  --padding-top: var(--sat, env(safe-area-inset-top, 44px)) !important;
 }
 
 ion-toolbar {
