@@ -69,9 +69,7 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 
-	<!-- Default to light content (white icons) for dark mode -->
-	<key>UIStatusBarStyle</key>
-	<string>UIStatusBarStyleLightContent</string>
+
 
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

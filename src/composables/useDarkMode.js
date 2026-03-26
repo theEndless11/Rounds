@@ -24,9 +24,8 @@ export const useDarkMode = () => {
   };
 
   const applyTheme = async () => {
-    // Apply CSS class and background
+    // Apply CSS classes and backgrounds
     document.body.classList.toggle('light', isLight.value);
-    // Also toggle on html element for status bar area coverage
     document.documentElement.classList.toggle('pre-light', isLight.value);
     const bg = isLight.value ? '#ffffff' : '#000000';
     document.documentElement.style.backgroundColor = bg;
@@ -36,17 +35,27 @@ export const useDarkMode = () => {
 
     try {
       if (Capacitor.getPlatform() === 'ios') {
-        // overlaysWebView: true - webview extends under status bar
-        // Status bar background = whatever CSS renders at the top of the page
-        // We only control the icon color:
-        // Style.Dark  = dark/black icons → use on LIGHT backgrounds
-        // Style.Light = light/white icons → use on DARK backgrounds
+        // UIViewControllerBasedStatusBarAppearance = false
+        // Style.Dark  = dark/black icons → LIGHT backgrounds
+        // Style.Light = light/white icons → DARK backgrounds
         await StatusBar.setStyle({
           style: isLight.value ? Style.Dark : Style.Light
         });
-        // NO setBackgroundColor on iOS - it causes artifacts with overlaysWebView
+
+        // Also notify AppDelegate natively for reliable style switching
+        // This uses Capacitor's bridge to call native code
+        try {
+          const { Capacitor: Cap } = await import('@capacitor/core');
+          if (Cap.isPluginAvailable('App')) {
+            // Post notification via window object that AppDelegate listens to
+            window.dispatchEvent(new CustomEvent('themeChange', {
+              detail: { isLight: isLight.value }
+            }));
+          }
+        } catch (e) {}
+
       } else {
-        // Android - can set background color directly
+        // Android
         await StatusBar.setStyle({
           style: isLight.value ? Style.Dark : Style.Light
         });

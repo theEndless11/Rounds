@@ -177,172 +177,6 @@
   </ion-page>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import { supabase } from '@/supabase'
-import { 
-  IonPage, 
-  IonContent,
-  IonIcon,
-  IonSpinner,
-  IonModal,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonButton
-} from '@ionic/vue'
-import { 
-  search, 
-  business,
-  businessOutline,
-  locationOutline,
-  timeOutline
-} from 'ionicons/icons'
-
-const activeCategoryName = ref('All')
-const loading = ref(false)
-const error = ref('')
-const displayedJobs = ref([])
-const selectedJob = ref(null)
-const showSearchModal = ref(false)
-const hasMore = ref(false)
-const currentOffset = ref(0)
-const pageSize = 30
-
-const searchFilters = ref({
-  occupation: '',
-  city: '',
-  work_place: '',
-  work_type: ''
-})
-
-const categories = [
-  { label: 'All', query: '' },
-  { label: 'Doctor', query: 'Doctor' },
-  { label: 'Physician', query: 'Physician' },
-  { label: 'Specialist', query: 'Specialist' },
-  { label: 'Consultant', query: 'Consultant' },
-  { label: 'Nursing', query: 'Nurse' },
-  { label: 'Surgeon', query: 'Surgeon' },
-  { label: 'Medical Officer', query: 'Medical Officer' },
-  { label: 'Healthcare', query: 'Healthcare' },
-  { label: 'Clinical', query: 'Clinical' }
-]
-
-// Fetch jobs from Supabase
-const fetchJobsFromDB = async (append = false) => {
-  loading.value = true
-  error.value = ''
-  
-  if (!append) {
-    currentOffset.value = 0
-    displayedJobs.value = []
-  }
-  
-  try {
-    let query = supabase
-      .from('jobs')
-      .select('*', { count: 'exact' })
-      .eq('is_active', true)
-      .order('date_posted', { ascending: false })
-      .range(currentOffset.value, currentOffset.value + pageSize - 1)
-
-    // Apply filters
-    if (searchFilters.value.occupation) {
-      query = query.ilike('occupation', `%${searchFilters.value.occupation}%`)
-    }
-    if (searchFilters.value.city) {
-      query = query.ilike('city', `%${searchFilters.value.city}%`)
-    }
-    if (searchFilters.value.work_place) {
-      query = query.eq('work_place', searchFilters.value.work_place)
-    }
-    if (searchFilters.value.work_type) {
-      query = query.eq('work_type', searchFilters.value.work_type)
-    }
-
-    const { data, error: fetchError, count } = await query
-
-    if (fetchError) throw fetchError
-
-    if (append) {
-      displayedJobs.value = [...displayedJobs.value, ...data]
-    } else {
-      displayedJobs.value = data
-    }
-
-    currentOffset.value += pageSize
-    hasMore.value = displayedJobs.value.length < count
-
-  } catch (err) {
-    error.value = `Failed to load jobs: ${err.message}`
-    console.error('Fetch error:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-const loadMore = () => {
-  fetchJobsFromDB(true)
-}
-
-const changeCategory = (label, query) => {
-  activeCategoryName.value = label
-  searchFilters.value.occupation = query
-  fetchJobsFromDB()
-}
-
-const performSearch = () => {
-  showSearchModal.value = false
-  activeCategoryName.value = 'Custom'
-  fetchJobsFromDB()
-}
-
-const viewJobDetails = (job) => {
-  selectedJob.value = job
-}
-
-const closeModal = () => {
-  selectedJob.value = null
-}
-
-const formatTimeAgo = (dateString) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffTime = Math.abs(now - date)
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-  
-  if (diffDays === 0) return 'today'
-  if (diffDays === 1) return '1d ago'
-  if (diffDays < 7) return `${diffDays}d ago`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
-  return `${Math.floor(diffDays / 30)}mo ago`
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  })
-}
-
-const formatDescription = (text) => {
-  if (!text) return ''
-  return text.replace(/\n/g, '<br>').replace(/  +/g, ' ').trim()
-}
-
-const handleImageError = (event) => {
-  event.target.style.display = 'none'
-}
-
-onMounted(() => {
-  fetchJobsFromDB()
-})
-</script>
 <style scoped>
 
 .load-more-container {
@@ -409,7 +243,7 @@ onMounted(() => {
 }
 
 .header {
-  background: var(--background-secondary);
+  background: var(--background);
   padding: 10px 12px;
   display: flex;
   justify-content: space-between;
@@ -442,7 +276,7 @@ onMounted(() => {
 }
 
 .categories {
-  background: var(--background-secondary);
+  background: var(--background);
   padding: 12px 16px;
   display: flex;
   gap: 8px;
@@ -459,7 +293,7 @@ onMounted(() => {
   padding: 6px 16px;
   border-radius: 16px;
   border: 1px solid var(--border-color);
-  background: var(--background-secondary);
+  background: var(--background);
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
@@ -510,7 +344,7 @@ body.light .error {
 }
 
 .job-card {
-  background: var(--card-background);
+  background: var(--background); 
   border-radius: 12px;
   padding: 14px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
@@ -866,3 +700,170 @@ body.light .modal-body {
   background: #1d4ed8;
 }
 </style>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { supabase } from '@/supabase'
+import { 
+  IonPage, 
+  IonContent,
+  IonIcon,
+  IonSpinner,
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton
+} from '@ionic/vue'
+import { 
+  search, 
+  business,
+  businessOutline,
+  locationOutline,
+  timeOutline
+} from 'ionicons/icons'
+
+const activeCategoryName = ref('All')
+const loading = ref(false)
+const error = ref('')
+const displayedJobs = ref([])
+const selectedJob = ref(null)
+const showSearchModal = ref(false)
+const hasMore = ref(false)
+const currentOffset = ref(0)
+const pageSize = 30
+
+const searchFilters = ref({
+  occupation: '',
+  city: '',
+  work_place: '',
+  work_type: ''
+})
+
+const categories = [
+  { label: 'All', query: '' },
+  { label: 'Doctor', query: 'Doctor' },
+  { label: 'Physician', query: 'Physician' },
+  { label: 'Specialist', query: 'Specialist' },
+  { label: 'Consultant', query: 'Consultant' },
+  { label: 'Nursing', query: 'Nurse' },
+  { label: 'Surgeon', query: 'Surgeon' },
+  { label: 'Medical Officer', query: 'Medical Officer' },
+  { label: 'Healthcare', query: 'Healthcare' },
+  { label: 'Clinical', query: 'Clinical' }
+]
+
+// Fetch jobs from Supabase
+const fetchJobsFromDB = async (append = false) => {
+  loading.value = true
+  error.value = ''
+  
+  if (!append) {
+    currentOffset.value = 0
+    displayedJobs.value = []
+  }
+  
+  try {
+    let query = supabase
+      .from('jobs')
+      .select('*', { count: 'exact' })
+      .eq('is_active', true)
+      .order('date_posted', { ascending: false })
+      .range(currentOffset.value, currentOffset.value + pageSize - 1)
+
+    // Apply filters
+    if (searchFilters.value.occupation) {
+      query = query.ilike('occupation', `%${searchFilters.value.occupation}%`)
+    }
+    if (searchFilters.value.city) {
+      query = query.ilike('city', `%${searchFilters.value.city}%`)
+    }
+    if (searchFilters.value.work_place) {
+      query = query.eq('work_place', searchFilters.value.work_place)
+    }
+    if (searchFilters.value.work_type) {
+      query = query.eq('work_type', searchFilters.value.work_type)
+    }
+
+    const { data, error: fetchError, count } = await query
+
+    if (fetchError) throw fetchError
+
+    if (append) {
+      displayedJobs.value = [...displayedJobs.value, ...data]
+    } else {
+      displayedJobs.value = data
+    }
+
+    currentOffset.value += pageSize
+    hasMore.value = displayedJobs.value.length < count
+
+  } catch (err) {
+    error.value = `Failed to load jobs: ${err.message}`
+    console.error('Fetch error:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadMore = () => {
+  fetchJobsFromDB(true)
+}
+
+const changeCategory = (label, query) => {
+  activeCategoryName.value = label
+  searchFilters.value.occupation = query
+  fetchJobsFromDB()
+}
+
+const performSearch = () => {
+  showSearchModal.value = false
+  activeCategoryName.value = 'Custom'
+  fetchJobsFromDB()
+}
+
+const viewJobDetails = (job) => {
+  selectedJob.value = job
+}
+
+const closeModal = () => {
+  selectedJob.value = null
+}
+
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffTime = Math.abs(now - date)
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 0) return 'today'
+  if (diffDays === 1) return '1d ago'
+  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
+  return `${Math.floor(diffDays / 30)}mo ago`
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  })
+}
+
+const formatDescription = (text) => {
+  if (!text) return ''
+  return text.replace(/\n/g, '<br>').replace(/  +/g, ' ').trim()
+}
+
+const handleImageError = (event) => {
+  event.target.style.display = 'none'
+}
+
+onMounted(() => {
+  fetchJobsFromDB()
+})
+</script>
