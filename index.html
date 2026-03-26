@@ -4,18 +4,43 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#000000" id="theme-color-meta" />
     <title>Rounds - Medical Social Network</title>
     <script>
-      // Apply theme before Vue loads to prevent background flash
-      try {
-        const stored = localStorage.getItem('CAPStorage::app-theme');
-        const isLight = stored === '"light"';
-        document.documentElement.style.backgroundColor = isLight ? '#ffffff' : '#000000';
-        document.body && (document.body.style.backgroundColor = isLight ? '#ffffff' : '#000000');
-        if (isLight) document.body && document.body.classList.add('light');
-      } catch(e) {}
+      // Run IMMEDIATELY before any rendering to set correct background
+      // This prevents the status bar area from flashing the wrong color
+      (function() {
+        try {
+          const stored = localStorage.getItem('CAPStorage::app-theme');
+          const isLight = stored === '"light"';
+          const bg = isLight ? '#ffffff' : '#000000';
+          // Set on html element - this is what shows in status bar area
+          document.documentElement.style.backgroundColor = bg;
+          // Update theme-color meta
+          const meta = document.getElementById('theme-color-meta');
+          if (meta) meta.content = bg;
+          // Pre-apply body class so CSS vars work immediately
+          if (isLight) document.documentElement.classList.add('pre-light');
+        } catch(e) {}
+      })();
     </script>
+    <style>
+      /* Critical CSS - applied before Vue loads */
+      html {
+        background-color: #000000;
+        height: 100%;
+      }
+      /* Pre-light class applied by inline script above */
+      html.pre-light {
+        background-color: #ffffff;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #000000;
+        height: 100%;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>

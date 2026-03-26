@@ -503,6 +503,11 @@ html {
   background-color: #000000;
 }
 
+/* pre-light toggled by JS when light mode is active */
+html.pre-light {
+  background-color: #ffffff;
+}
+
 body {
   height: 100%;
   margin: 0;
@@ -511,12 +516,6 @@ body {
 }
 
 body.light {
-  background-color: #ffffff;
-}
-
-/* html background must also follow theme for status bar area */
-body.light ~ html,
-html:has(body.light) {
   background-color: #ffffff;
 }
 

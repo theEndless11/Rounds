@@ -26,6 +26,8 @@ export const useDarkMode = () => {
   const applyTheme = async () => {
     // Apply CSS class and background
     document.body.classList.toggle('light', isLight.value);
+    // Also toggle on html element for status bar area coverage
+    document.documentElement.classList.toggle('pre-light', isLight.value);
     const bg = isLight.value ? '#ffffff' : '#000000';
     document.documentElement.style.backgroundColor = bg;
     document.body.style.backgroundColor = bg;

@@ -64,11 +64,14 @@
 	<key>UIStatusBarHidden</key>
 	<false/>
 
-	<!-- With overlaysWebView true, UIViewControllerBasedStatusBarAppearance
-	     must be TRUE so each view controller controls its own bar style.
-	     Capacitor's StatusBar plugin handles this correctly. -->
+	<!-- false = app controls status bar globally via UIApplication
+	     This makes StatusBar.setStyle() work reliably with overlaysWebView: true -->
 	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<true/>
+	<false/>
+
+	<!-- Default to light content (white icons) for dark mode -->
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
 
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
