@@ -48,7 +48,7 @@ ion-tab-bar {
   --background: #000;
   --border-color: transparent;
   /* Fixed height for the visible icon+label area only */
-  --height: 49px;
+  --height: 42px;
   border-top: 1px solid #1a1a1a;
   /* Let safe area handle the bottom spacing naturally */
   padding-bottom: env(safe-area-inset-bottom);

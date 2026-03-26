@@ -18,39 +18,37 @@ export const useDarkMode = () => {
       }
       await applyTheme();
     } catch (error) {
-      console.error('Error loading theme:', error);
       isLight.value = false;
       await applyTheme();
     }
   };
 
   const applyTheme = async () => {
+    // Apply CSS class and background
     document.body.classList.toggle('light', isLight.value);
-    document.documentElement.style.backgroundColor = isLight.value ? '#ffffff' : '#000000';
-    document.body.style.backgroundColor = isLight.value ? '#ffffff' : '#000000';
+    const bg = isLight.value ? '#ffffff' : '#000000';
+    document.documentElement.style.backgroundColor = bg;
+    document.body.style.backgroundColor = bg;
 
     if (!Capacitor.isNativePlatform()) return;
 
     try {
       if (Capacitor.getPlatform() === 'ios') {
-        // UIViewControllerBasedStatusBarAppearance = false in Info.plist
-        // so StatusBar plugin controls style globally
-        // overlaysWebView = false so status bar has its own native background
-        // We only need to set the icon style (light/dark)
+        // overlaysWebView: true - webview extends under status bar
+        // Status bar background = whatever CSS renders at the top of the page
+        // We only control the icon color:
+        // Style.Dark  = dark/black icons → use on LIGHT backgrounds
+        // Style.Light = light/white icons → use on DARK backgrounds
         await StatusBar.setStyle({
           style: isLight.value ? Style.Dark : Style.Light
         });
-        await StatusBar.setBackgroundColor({
-          color: isLight.value ? '#ffffff' : '#000000'
-        });
+        // NO setBackgroundColor on iOS - it causes artifacts with overlaysWebView
       } else {
-        // Android
+        // Android - can set background color directly
         await StatusBar.setStyle({
           style: isLight.value ? Style.Dark : Style.Light
         });
-        await StatusBar.setBackgroundColor({
-          color: isLight.value ? '#ffffff' : '#000000'
-        });
+        await StatusBar.setBackgroundColor({ color: bg });
       }
     } catch (error) {
       console.log('StatusBar not available:', error);

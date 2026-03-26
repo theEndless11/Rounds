@@ -494,10 +494,16 @@ body.light {
 }
 
 /* ============================================
-   BASE
+   BASE - background fills status bar area
    ============================================ */
 
-html, body {
+html {
+  height: 100%;
+  /* This fills the status bar area on iOS with overlaysWebView: true */
+  background-color: #000000;
+}
+
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -505,6 +511,12 @@ html, body {
 }
 
 body.light {
+  background-color: #ffffff;
+}
+
+/* html background must also follow theme for status bar area */
+body.light ~ html,
+html:has(body.light) {
   background-color: #ffffff;
 }
 
@@ -517,7 +529,11 @@ ion-page {
 }
 
 /* ============================================
-   HEADER - Kill Ionic hairline border
+   HEADER
+   With overlaysWebView: true, the toolbar's background
+   visually fills the status bar area because it's the
+   topmost element. padding-top pushes content below
+   the status bar while the background extends behind it.
    ============================================ */
 
 .header-ios::after,
@@ -536,7 +552,7 @@ ion-header {
 }
 
 ion-header ion-toolbar {
-  --background: var(--background);
+  --background: #000000;
   --color: var(--text-primary);
   --border-width: 0;
   --border-color: transparent;
@@ -547,6 +563,16 @@ ion-header ion-toolbar {
 body.light ion-header ion-toolbar {
   --background: #ffffff;
   --color: #0f1419;
+}
+
+/* First toolbar gets padding for status bar safe area */
+ion-header ion-toolbar:first-child {
+  padding-top: env(safe-area-inset-top);
+  --background: #000000;
+}
+
+body.light ion-header ion-toolbar:first-child {
+  --background: #ffffff;
 }
 
 ion-toolbar {
@@ -673,10 +699,6 @@ body.light ion-action-sheet::part(header) {
   background: #ffffff !important;
   color: #000000 !important;
 }
-
-/* ============================================
-   ALERTS & TOASTS
-   ============================================ */
 
 ion-alert {
   --background: var(--card-background);
