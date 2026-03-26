@@ -8,14 +8,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         window?.backgroundColor = UIColor.black
-
-        // Force white status bar icons at the native layer, before Capacitor
-        // or the webview loads anything. This works because
-        // UIViewControllerBasedStatusBarAppearance is false in Info.plist,
-        // meaning UIApplication owns the status bar style globally.
-        // UIStatusBarStyleLightContent = white icons = visible on black background.
-        UIApplication.shared.statusBarStyle = .lightContent
-
         return true
     }
 

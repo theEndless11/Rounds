@@ -3,48 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <!--
-      viewport-fit=cover: required for overlaysWebView:true so the app fills
-      edge-to-edge behind the status bar on iPhone notch / Dynamic Island.
-    -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#000000" id="theme-color-meta" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!--
-      black-translucent: app renders edge-to-edge behind the status bar.
-      Status bar icons float over the app content with NO background of their own.
-      Icon COLOR is controlled via StatusBar.setStyle() — Style.Light = white icons.
-      White icons on our black background = always visible. ✓
-    -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
     <title>Rounds - Medical Social Network</title>
     <script>
-      (function() {
-        try {
-          const stored = localStorage.getItem('CAPStorage::app-theme');
-          const isLight = stored === '"light"';
-          const bg = isLight ? '#ffffff' : '#000000';
-          document.documentElement.style.backgroundColor = bg;
-          document.documentElement.style.setProperty('background-color', bg, 'important');
-          const meta = document.getElementById('theme-color-meta');
-          if (meta) meta.content = bg;
-          // Note: apple-mobile-web-app-status-bar-style stays "black-translucent" always.
-          // Icon color (white/black) is handled by StatusBar.setStyle() at runtime.
-          if (isLight) document.documentElement.classList.add('light-pre');
-        } catch(e) {}
-      })();
+      // Apply theme before Vue loads to prevent background flash
+      try {
+        const stored = localStorage.getItem('CAPStorage::app-theme');
+        const isLight = stored === '"light"';
+        document.documentElement.style.backgroundColor = isLight ? '#ffffff' : '#000000';
+        document.body && (document.body.style.backgroundColor = isLight ? '#ffffff' : '#000000');
+        if (isLight) document.body && document.body.classList.add('light');
+      } catch(e) {}
     </script>
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        background-color: #000000;
-        min-height: 100vh;
-      }
-      body.light {
-        background-color: #ffffff;
-      }
-    </style>
   </head>
   <body>
     <div id="app"></div>

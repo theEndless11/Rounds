@@ -495,16 +495,9 @@ body.light {
 
 /* ============================================
    BASE
-   overlaysWebView:true — status bar floats over the app edge-to-edge.
-   We use --sat (set by StatusBar.getInfo()) to pad the first toolbar.
    ============================================ */
 
-html {
-  height: 100%;
-  background-color: #000000;
-}
-
-body {
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -515,67 +508,51 @@ body.light {
   background-color: #ffffff;
 }
 
-/* Use CSS variables only — never set raw background: on Ionic components.
-   Raw background properties bypass Ionic's shadow DOM and bleed into the
-   status bar area, painting over the icons. */
 ion-app {
-  --background: var(--background);
+  background-color: var(--background);
 }
 
 ion-page {
-  --background: var(--background);
+  background-color: var(--background);
 }
 
 /* ============================================
-   HEADER - CLEAN, NO BORDER/LINE
+   HEADER - Kill Ionic hairline border
    ============================================ */
-
-.header-ios ion-toolbar:last-of-type,
-.header-md ion-toolbar:last-of-type {
-  --border-width: 0 !important;
-}
 
 .header-ios::after,
 .header-md::after {
   display: none !important;
   height: 0 !important;
-  background-image: none !important;
   background: none !important;
 }
 
 ion-header::after {
   display: none !important;
-  height: 0 !important;
-  background: none !important;
 }
 
-ion-header,
+ion-header {
+  box-shadow: none !important;
+}
+
 ion-header ion-toolbar {
   --background: var(--background);
+  --color: var(--text-primary);
   --border-width: 0;
   --border-color: transparent;
   --box-shadow: none;
-  /* NO raw background: property here — only CSS variables.
-     Raw background on ion-header bleeds up behind the status bar icons. */
+  box-shadow: none;
 }
 
-ion-header ion-toolbar:first-child {
-  --background: var(--background);
-  /*
-    --sat is set at runtime by StatusBar.getInfo() in useDarkMode.js.
-    env(safe-area-inset-top) is the CSS fallback before --sat is set.
-    54px is the hard fallback for Dynamic Island devices.
-    This pads the toolbar content below the floating status bar.
-  */
-  padding-top: var(--sat, env(safe-area-inset-top, 54px)) !important;
-  --padding-top: var(--sat, env(safe-area-inset-top, 54px)) !important;
+body.light ion-header ion-toolbar {
+  --background: #ffffff;
+  --color: #0f1419;
 }
 
 ion-toolbar {
   --border-width: 0 !important;
   --border-color: transparent !important;
   --box-shadow: none !important;
-  box-shadow: none !important;
 }
 
 /* ============================================
@@ -599,6 +576,10 @@ ion-content {
 /* ============================================
    GLOBAL STYLES
    ============================================ */
+
+body {
+  background-color: var(--background);
+}
 
 ion-content {
   --background: var(--background);
@@ -655,6 +636,10 @@ ion-modal ion-content {
   --background: var(--background);
 }
 
+/* ============================================
+   ACTION SHEET
+   ============================================ */
+
 ion-action-sheet {
   --background: #000000 !important;
   --color: #ffffff !important;
@@ -689,6 +674,10 @@ body.light ion-action-sheet::part(header) {
   color: #000000 !important;
 }
 
+/* ============================================
+   ALERTS & TOASTS
+   ============================================ */
+
 ion-alert {
   --background: var(--card-background);
   --color: var(--text-primary);
@@ -699,7 +688,10 @@ ion-toast {
   --color: var(--text-primary);
 }
 
-/* Custom Scrollbar */
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
